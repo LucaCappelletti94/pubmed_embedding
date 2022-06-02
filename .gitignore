@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 *.xml
 .DS_Store
+*.xml.gz

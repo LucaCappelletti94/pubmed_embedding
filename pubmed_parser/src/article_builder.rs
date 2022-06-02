@@ -595,7 +595,7 @@ impl MeshListBuilder {
     }
 
     pub fn build(self) -> Result<Vec<Mesh>, String> {
-        if !self.xml_helper.can_build() {
+        if !self.xml_helper.can_build() && !self.meshes.is_empty() {
             return Err(format!(
                 concat!(
                     "Build method was called on MeshListBuilder ",
@@ -621,11 +621,16 @@ struct KeywordListBuilder {
 }
 
 impl KeywordListBuilder {
-    pub fn new() -> Self {
+    pub fn new(owner: &str) -> Self {
         KeywordListBuilder {
             xml_helper: XMLHelper::new("KeywordList"),
             keywords: Vec::new(),
-            keyword_builder: ObjectBuilder::new("Keyword"),
+            keyword_builder: ObjectBuilder::with_attributes(
+                "Keyword",
+                [("Owner".to_string(), owner.to_string())]
+                    .into_iter()
+                    .collect(),
+            ),
         }
     }
 
@@ -665,6 +670,72 @@ impl KeywordListBuilder {
             ));
         }
         Ok(self.keywords)
+    }
+
+    pub fn can_build(&self) -> bool {
+        self.xml_helper.can_build()
+    }
+}
+
+#[derive(Debug)]
+struct SupplMeshListBuilder {
+    xml_helper: XMLHelper,
+    meshes: Vec<SupplMesh>,
+    suppl_mesh_builder: ObjectBuilder<String>,
+}
+
+impl SupplMeshListBuilder {
+    pub fn new() -> Self {
+        SupplMeshListBuilder {
+            xml_helper: XMLHelper::new("SupplMeshList"),
+            meshes: Vec::new(),
+            suppl_mesh_builder: ObjectBuilder::new("SupplMeshName"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        let line = self.xml_helper.parse(line)?;
+        if line.is_empty() {
+            return Ok(self.xml_helper.tag_opened);
+        }
+        self.suppl_mesh_builder.parse(line)?;
+        if self.suppl_mesh_builder.can_build() {
+            let suppl_mesh_builder = core::mem::replace(
+                &mut self.suppl_mesh_builder,
+                ObjectBuilder::new("SupplMeshName"),
+            );
+            self.meshes.push(SupplMesh {
+                code: suppl_mesh_builder
+                    .xml_helper
+                    .attributes
+                    .get("UI")
+                    .unwrap()
+                    .clone(),
+                mesh_type: suppl_mesh_builder
+                    .xml_helper
+                    .attributes
+                    .get("Type")
+                    .unwrap()
+                    .clone(),
+                name: suppl_mesh_builder.build().unwrap(),
+            })
+        }
+
+        Ok(self.xml_helper.tag_opened)
+    }
+
+    pub fn build(self) -> Result<Vec<SupplMesh>, String> {
+        if !self.xml_helper.can_build() && !self.meshes.is_empty() {
+            return Err(format!(
+                concat!(
+                    "Build method was called on SupplMeshListBuilder ",
+                    "but the object is not yet ready to build. ",
+                    "The object currently looks like {:?}"
+                ),
+                self
+            ));
+        }
+        Ok(self.meshes)
     }
 
     pub fn can_build(&self) -> bool {
@@ -905,6 +976,48 @@ impl CommentsCorrectionsListBuilder {
     }
 }
 
+struct ArticleDateBuilder {
+    xml_helper: XMLHelper,
+}
+
+impl ArticleDateBuilder {
+    pub fn new() -> Self {
+        ArticleDateBuilder {
+            xml_helper: XMLHelper::new("ArticleDate"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        let _ = self.xml_helper.parse(line)?;
+        Ok(self.xml_helper.tag_opened)
+    }
+
+    pub fn can_build(&self) -> bool {
+        self.xml_helper.can_build()
+    }
+}
+
+struct InvestigatorListBuilder {
+    xml_helper: XMLHelper,
+}
+
+impl InvestigatorListBuilder {
+    pub fn new() -> Self {
+        InvestigatorListBuilder {
+            xml_helper: XMLHelper::new("InvestigatorList"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        let _ = self.xml_helper.parse(line)?;
+        Ok(self.xml_helper.tag_opened)
+    }
+
+    pub fn can_build(&self) -> bool {
+        self.xml_helper.can_build()
+    }
+}
+
 pub(crate) struct ArticleBuilder {
     xml_helper: XMLHelper,
     completion_date_builder: DateBuilder,
@@ -926,12 +1039,16 @@ pub(crate) struct ArticleBuilder {
     history_builder: HistoryBuilder,
     data_bank_builder: DataBankListBuilder,
     grant_builder: GrantListBuilder,
+    article_date_builder: ArticleDateBuilder,
     comments_corrections_builder: CommentsCorrectionsListBuilder,
     personal_name_subject_list: PersonalNameSubjectListBuilder,
     chemical_list_builder: ChemicalListBuilder,
     mesh_list_builder: MeshListBuilder,
+    suppl_mesh_list_builder: SupplMeshListBuilder,
     references_builder: ReferencesBuilder,
-    keywords_builder: KeywordListBuilder,
+    pip_keywords_builder: KeywordListBuilder,
+    kie_keywords_builder: KeywordListBuilder,
+    investigator_list_builder: InvestigatorListBuilder,
 }
 
 impl ArticleBuilder {
@@ -982,12 +1099,16 @@ impl ArticleBuilder {
             history_builder: HistoryBuilder::new(),
             data_bank_builder: DataBankListBuilder::new(),
             grant_builder: GrantListBuilder::new(),
+            article_date_builder: ArticleDateBuilder::new(),
             comments_corrections_builder: CommentsCorrectionsListBuilder::new(),
             personal_name_subject_list: PersonalNameSubjectListBuilder::new(),
             chemical_list_builder: ChemicalListBuilder::new(),
             mesh_list_builder: MeshListBuilder::new(),
+            suppl_mesh_list_builder: SupplMeshListBuilder::new(),
             references_builder: ReferencesBuilder::new(),
-            keywords_builder: KeywordListBuilder::new(),
+            pip_keywords_builder: KeywordListBuilder::new("PIP"),
+            kie_keywords_builder: KeywordListBuilder::new("KIE"),
+            investigator_list_builder: InvestigatorListBuilder::new(),
         }
     }
 
@@ -1054,7 +1175,13 @@ impl ArticleBuilder {
         if !self.mesh_list_builder.can_build() && self.mesh_list_builder.parse(line)? {
             return Ok(());
         }
-        if !self.keywords_builder.can_build() && self.keywords_builder.parse(line)? {
+        if !self.suppl_mesh_list_builder.can_build() && self.suppl_mesh_list_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.pip_keywords_builder.can_build() && self.pip_keywords_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.kie_keywords_builder.can_build() && self.kie_keywords_builder.parse(line)? {
             return Ok(());
         }
         if !self.references_builder.can_build() && self.references_builder.parse(line)? {
@@ -1069,7 +1196,17 @@ impl ArticleBuilder {
         if !self.grant_builder.can_build() && self.grant_builder.parse(line)? {
             return Ok(());
         }
-        if !self.comments_corrections_builder.can_build() && self.comments_corrections_builder.parse(line)? {
+        if !self.article_date_builder.can_build() && self.article_date_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.comments_corrections_builder.can_build()
+            && self.comments_corrections_builder.parse(line)?
+        {
+            return Ok(());
+        }
+        if !self.investigator_list_builder.can_build()
+            && self.investigator_list_builder.parse(line)?
+        {
             return Ok(());
         }
         if !self.personal_name_subject_list.can_build()
@@ -1085,8 +1222,11 @@ impl ArticleBuilder {
         if !self.xml_helper.can_build() {
             return Err("The article is not ready!".to_string());
         }
+        let mut keywords = self.pip_keywords_builder.build()?;
+
+        keywords.extend(self.kie_keywords_builder.build()?);
         Ok(Article {
-            completion_date: self.completion_date_builder.build().unwrap(),
+            completion_date: self.completion_date_builder.build().ok(),
             revision_date: self.revised_date_builder.build().ok(),
             pubmed_id: self.pmid_builder.build().unwrap(),
             doi: self.doi_builder.build(),
@@ -1099,8 +1239,9 @@ impl ArticleBuilder {
             other_abstract_text: self.other_abstract_builder.build().ok(),
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
+            suppl_mesh_list: self.suppl_mesh_list_builder.build()?,
             references: self.references_builder.build()?,
-            keywords: self.keywords_builder.build()?,
+            keywords,
         })
     }
 

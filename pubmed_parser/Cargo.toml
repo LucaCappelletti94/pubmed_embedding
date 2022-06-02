@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 rayon="1.5.3"
 indicatif = {version="0.16.0", features = ["rayon"]}
+flate2 = "1.0"
