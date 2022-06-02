@@ -1,9 +1,12 @@
 use crate::article::*;
 use crate::article_builder::*;
+use indicatif::ParallelProgressIterator;
+use indicatif::ProgressBar;
 use rayon::prelude::*;
+use std::fs;
 use std::io::BufRead;
 
-pub fn parse_single_pubmed(path: &str) -> Vec<Result<Article, std::io::Error>> {
+pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>> {
     let file = std::fs::File::open(path).unwrap();
     let file = std::io::BufReader::new(file);
     let mut article_builder = ArticleBuilder::new();
@@ -44,11 +47,12 @@ pub fn parse_single_pubmed(path: &str) -> Vec<Result<Article, std::io::Error>> {
                 }
                 article_builder.parse(line).unwrap();
                 if article_builder.can_build() {
-                    Some(
-                        Ok(core::mem::replace(&mut article_builder, ArticleBuilder::new())
-                            .build()
-                            .unwrap()),
+                    Some(Ok(core::mem::replace(
+                        &mut article_builder,
+                        ArticleBuilder::new(),
                     )
+                    .build()
+                    .unwrap()))
                 } else {
                     None
                 }
@@ -57,12 +61,17 @@ pub fn parse_single_pubmed(path: &str) -> Vec<Result<Article, std::io::Error>> {
         })
         .collect::<Vec<Result<_, _>>>()
 }
-pub fn parse_pubmed() -> Result<Vec<Article>, std::io::Error> {
-    // TODO! make tools that reads the files from a given directory.
+pub fn parse_pubmed(directory: &str) -> Result<Vec<Article>, std::io::Error> {
+    let paths = fs::read_dir(directory)
+        .unwrap()
+        .map(|path| path.unwrap().path().display().to_string())
+        .collect::<Vec<String>>();
 
-    let paths = vec!["../pubmed22n0012.xml"];
+    let pb = ProgressBar::new(paths.len() as u64);
+
     paths
         .into_par_iter()
+        .progress_with(pb)
         .flat_map(parse_single_pubmed)
         .collect()
 }
