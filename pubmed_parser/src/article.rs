@@ -13,7 +13,7 @@ pub struct JournalIssue {
 pub struct Journal {
     pub(crate) issn: Option<String>,
     pub(crate) title: String,
-    pub(crate) iso_abbreviation: String,
+    pub(crate) iso_abbreviation: Option<String>,
     pub(crate) journal_issue: JournalIssue,
 }
 

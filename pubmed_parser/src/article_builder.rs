@@ -373,7 +373,7 @@ impl JournalBuilder {
         Ok(Journal {
             issn: self.issn_builder.build(),
             title: self.title_builder.build().unwrap(),
-            iso_abbreviation: self.iso_abbreviation_builder.build().unwrap(),
+            iso_abbreviation: self.iso_abbreviation_builder.build(),
             journal_issue: self.journal_issue_builder.build()?,
         })
     }
