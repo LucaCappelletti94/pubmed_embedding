@@ -645,6 +645,7 @@ impl MeshListBuilder {
 struct KeywordListBuilder {
     xml_helper: XMLHelper,
     keywords: Vec<Keyword>,
+    owner: String,
     keyword_builder: ObjectBuilder<String>,
 }
 
@@ -653,6 +654,7 @@ impl KeywordListBuilder {
         KeywordListBuilder {
             xml_helper: XMLHelper::new("KeywordList"),
             keywords: Vec::new(),
+            owner: owner.to_string(),
             keyword_builder: ObjectBuilder::with_attributes(
                 "Keyword",
                 [("Owner".to_string(), owner.to_string())]
@@ -669,8 +671,15 @@ impl KeywordListBuilder {
         }
         self.keyword_builder.parse(line)?;
         if self.keyword_builder.can_build() {
-            let keyword_builder =
-                core::mem::replace(&mut self.keyword_builder, ObjectBuilder::new("Keyword"));
+            let keyword_builder = core::mem::replace(
+                &mut self.keyword_builder,
+                ObjectBuilder::with_attributes(
+                    "Keyword",
+                    [("Owner".to_string(), self.owner.clone())]
+                        .into_iter()
+                        .collect(),
+                ),
+            );
             self.keywords.push(Keyword {
                 is_major_topic: keyword_builder
                     .xml_helper
@@ -698,6 +707,58 @@ impl KeywordListBuilder {
             ));
         }
         Ok(self.keywords)
+    }
+
+    pub fn can_build(&self) -> bool {
+        self.xml_helper.can_build()
+    }
+}
+
+#[derive(Debug)]
+struct GeneSymbolListBuilder {
+    xml_helper: XMLHelper,
+    gene_symbols: Vec<String>,
+    gene_symbol_builder: ObjectBuilder<String>,
+}
+
+impl GeneSymbolListBuilder {
+    pub fn new() -> Self {
+        GeneSymbolListBuilder {
+            xml_helper: XMLHelper::new("GeneSymbolList"),
+            gene_symbols: Vec::new(),
+            gene_symbol_builder: ObjectBuilder::new("GeneSymbol"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        let line = self.xml_helper.parse(line)?;
+        if line.is_empty() {
+            return Ok(self.xml_helper.tag_opened);
+        }
+        self.gene_symbol_builder.parse(line)?;
+        if self.gene_symbol_builder.can_build() {
+            let gene_symbol_builder = core::mem::replace(
+                &mut self.gene_symbol_builder,
+                ObjectBuilder::new("GeneSymbol"),
+            );
+            self.gene_symbols.push(gene_symbol_builder.build().unwrap())
+        }
+
+        Ok(self.xml_helper.tag_opened)
+    }
+
+    pub fn build(self) -> Result<Vec<String>, String> {
+        if !self.xml_helper.can_build() && !self.gene_symbols.is_empty() {
+            return Err(format!(
+                concat!(
+                    "Build method was called on GeneSymbolListBuilder ",
+                    "but the object is not yet ready to build. ",
+                    "The object currently looks like {:?}"
+                ),
+                self
+            ));
+        }
+        Ok(self.gene_symbols)
     }
 
     pub fn can_build(&self) -> bool {
@@ -1082,6 +1143,7 @@ pub(crate) struct ArticleBuilder {
     pip_keywords_builder: KeywordListBuilder,
     kie_keywords_builder: KeywordListBuilder,
     investigator_list_builder: InvestigatorListBuilder,
+    gene_symbol_list_builder: GeneSymbolListBuilder
 }
 
 impl ArticleBuilder {
@@ -1134,7 +1196,10 @@ impl ArticleBuilder {
             pip_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
             kie_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
             nasa_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
-            publisher_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "Publisher"),
+            publisher_other_abstract_builder: AbstractBuilder::with_attributes(
+                "OtherAbstract",
+                "Publisher",
+            ),
             author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
             publication_type_list_builder: PublicationTypeListBuilder::new(),
@@ -1152,6 +1217,7 @@ impl ArticleBuilder {
             pip_keywords_builder: KeywordListBuilder::new("PIP"),
             kie_keywords_builder: KeywordListBuilder::new("KIE"),
             investigator_list_builder: InvestigatorListBuilder::new(),
+            gene_symbol_list_builder: GeneSymbolListBuilder::new()
         }
     }
 
@@ -1196,16 +1262,24 @@ impl ArticleBuilder {
         if !self.abstract_builder.can_build() && self.abstract_builder.parse(line)? {
             return Ok(());
         }
-        if !self.pip_other_abstract_builder.can_build() && self.pip_other_abstract_builder.parse(line)? {
+        if !self.pip_other_abstract_builder.can_build()
+            && self.pip_other_abstract_builder.parse(line)?
+        {
             return Ok(());
         }
-        if !self.kie_other_abstract_builder.can_build() && self.kie_other_abstract_builder.parse(line)? {
+        if !self.kie_other_abstract_builder.can_build()
+            && self.kie_other_abstract_builder.parse(line)?
+        {
             return Ok(());
         }
-        if !self.nasa_other_abstract_builder.can_build() && self.nasa_other_abstract_builder.parse(line)? {
+        if !self.nasa_other_abstract_builder.can_build()
+            && self.nasa_other_abstract_builder.parse(line)?
+        {
             return Ok(());
         }
-        if !self.publisher_other_abstract_builder.can_build() && self.publisher_other_abstract_builder.parse(line)? {
+        if !self.publisher_other_abstract_builder.can_build()
+            && self.publisher_other_abstract_builder.parse(line)?
+        {
             return Ok(());
         }
         if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
@@ -1225,6 +1299,9 @@ impl ArticleBuilder {
             return Ok(());
         }
         if !self.chemical_list_builder.can_build() && self.chemical_list_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.gene_symbol_list_builder.can_build() && self.gene_symbol_list_builder.parse(line)? {
             return Ok(());
         }
         if !self.mesh_list_builder.can_build() && self.mesh_list_builder.parse(line)? {
@@ -1298,6 +1375,7 @@ impl ArticleBuilder {
             publisher_other_abstract_text: self.publisher_other_abstract_builder.build().ok(),
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
+            gene_symbol_list: self.gene_symbol_list_builder.build()?,
             suppl_mesh_list: self.suppl_mesh_list_builder.build()?,
             references: self.references_builder.build()?,
             keywords,

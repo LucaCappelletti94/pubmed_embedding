@@ -66,6 +66,7 @@ pub struct Article {
     pub(crate) nasa_other_abstract_text: Option<String>,
     pub(crate) publisher_other_abstract_text: Option<String>,
     pub(crate) chemical_list: Vec<Chemical>,
+    pub(crate) gene_symbol_list: Vec<String>,
     pub(crate) mesh_list: Vec<Mesh>,
     pub(crate) suppl_mesh_list: Vec<SupplMesh>,
     pub(crate) references: Vec<usize>,
