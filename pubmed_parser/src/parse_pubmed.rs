@@ -16,6 +16,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
     file.lines()
         .filter_map(|line| match line {
             Ok(line) => {
+                return None;
                 let line = line.trim();
                 if [
                     "<?xml",
@@ -65,7 +66,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
                     None
                 }
             }
-            Err(line) => Some(Err(format!("Failed with decompression of file {}.", path))),
+            Err(_) => Some(Err(format!("Failed with decompression of file {}.", path))),
         })
         .collect::<Vec<Result<_, _>>>()
 }
