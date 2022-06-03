@@ -117,4 +117,7 @@ pub fn parse_pubmed(directory: &str) {
                 ).as_bytes()).unwrap();
             }
         });
+
+        nodes.flush().unwrap();
+        edges.flush().unwrap();
 }
