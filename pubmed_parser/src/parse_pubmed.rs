@@ -7,7 +7,7 @@ use rayon::prelude::*;
 use std::fs;
 use std::io::BufRead;
 
-pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>> {
+pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
     let file = std::fs::File::open(&path).unwrap();
     let file = GzDecoder::new(file);
     let file = std::io::BufReader::new(file);
@@ -65,11 +65,11 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     None
                 }
             }
-            Err(line) => Some(Err(line)),
+            Err(line) => Some(Err(format!("Failed with decompression of file {}.", path))),
         })
         .collect::<Vec<Result<_, _>>>()
 }
-pub fn parse_pubmed(directory: &str) -> Result<Vec<Article>, std::io::Error> {
+pub fn parse_pubmed(directory: &str) -> Result<Vec<Article>, String> {
     let paths = fs::read_dir(directory)
         .unwrap()
         .map(|path| path.unwrap().path().display().to_string())
