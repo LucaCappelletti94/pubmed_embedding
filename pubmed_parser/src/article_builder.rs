@@ -202,7 +202,7 @@ impl<T: FromStr + Debug> ObjectBuilder<T> {
             return None;
         }
         Some(
-            T::from_str(&self.textual_value)
+            T::from_str(self.textual_value.trim())
                 .map_err(|_| {
                     format!(
                         concat!("Something went wrong while trying to convert the value `{}` in tag {}."),

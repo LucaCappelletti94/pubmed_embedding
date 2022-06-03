@@ -11,7 +11,7 @@ use std::io::BufWriter;
 use std::fs;
 use std::io::BufRead;
 
-pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
+pub fn parse_single_pubmed(path: String) -> Vec<Article> {
     let file = std::fs::File::open(&path).unwrap();
     let file = GzDecoder::new(file);
     let file = std::io::BufReader::new(file);
@@ -59,19 +59,20 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
                     .map_err(|err| format!("{} {}", err, path))
                     .unwrap();
                 if article_builder.can_build() {
-                    Some(Ok(core::mem::replace(
+                    Some(core::mem::replace(
                         &mut article_builder,
                         ArticleBuilder::new(),
                     )
                     .build()
-                    .unwrap()))
+                    .map_err(|err| format!("{} {}", err, path))
+                    .unwrap())
                 } else {
                     None
                 }
             }
-            Err(_) => Some(Err(format!("Failed with decompression of file {}.", path))),
+            Err(_) => Some(Err(format!("Failed with decompression of file {}.", path)).unwrap()),
         })
-        .collect::<Vec<Result<_, _>>>()
+        .collect::<Vec<_>>()
 }
 
 pub fn parse_pubmed(directory: &str) {
@@ -95,27 +96,27 @@ pub fn parse_pubmed(directory: &str) {
     nodes.write(b"node_name\tnode_type\tdescription\n").unwrap();
 
     paths
-        .into_iter()
+        .into_par_iter()
         .progress_with(pb)
         .flat_map(parse_single_pubmed)
         .for_each(|article|{
-            let article = article.unwrap();
-            for node in article.to_nodes() {
-                nodes.write(format!(
-                    "{}\t{}\t{}\n",
-                    node.node_name,
-                    node.node_type,
-                    node.description,
-                ).as_bytes()).unwrap();
-            }
-            for edge in article.to_edges() {
-                edges.write(format!(
-                    "{}\t{}\t{}\n",
-                    edge.subject,
-                    edge.edge_type,
-                    edge.object,
-                ).as_bytes()).unwrap();
-            }
+            return;
+            // for node in article.to_nodes() {
+            //     nodes.write(format!(
+            //         "{}\t{}\t{}\n",
+            //         node.node_name,
+            //         node.node_type,
+            //         node.description,
+            //     ).as_bytes()).unwrap();
+            // }
+            // for edge in article.to_edges() {
+            //     edges.write(format!(
+            //         "{}\t{}\t{}\n",
+            //         edge.subject,
+            //         edge.edge_type,
+            //         edge.object,
+            //     ).as_bytes()).unwrap();
+            // }
         });
 
         nodes.flush().unwrap();
