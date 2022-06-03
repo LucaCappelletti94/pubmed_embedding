@@ -99,8 +99,8 @@ pub fn parse_pubmed(directory: &str) {
         .progress_with(pb)
         .flat_map(parse_single_pubmed)
         .for_each(|article|{
+            let article = article.unwrap();
             return;
-            // let article = article.unwrap();
             // for node in article.to_nodes() {
             //     nodes.write(format!(
             //         "{}\t{}\t{}\n",
