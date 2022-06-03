@@ -1045,7 +1045,7 @@ impl IgnoreTag {
 
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 }
 

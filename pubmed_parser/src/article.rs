@@ -93,11 +93,11 @@ pub struct Article {
 impl Article {
     pub fn to_nodes(&self) -> Vec<Node> {
         let mut nodes = vec![Node {
-            node_name: self.pubmed_id.to_string(),
+            node_name: format!("PMID:{}", self.pubmed_id),
             node_type: "Paper".to_string(),
             description: format!(
                 "{}|{}|{}",
-                self.title.as_ref().unwrap_or(&"|".to_string()),
+                self.title.as_ref().unwrap_or(&"".to_string()),
                 self.abstract_text
                     .as_ref()
                     .map(|abs| abs.text.to_string())
@@ -167,7 +167,7 @@ impl Article {
 
         for chemical in self.chemical_list.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
                 object: chemical.code.clone(),
                 edge_type: "PaperToChemical".to_string(),
             });
@@ -175,7 +175,7 @@ impl Article {
 
         for gene in self.gene_symbol_list.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
                 object: gene.clone(),
                 edge_type: "PaperToGene".to_string(),
             });
@@ -183,13 +183,13 @@ impl Article {
 
         for mesh in self.mesh_list.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
                 object: mesh.descriptor.code.clone(),
                 edge_type: "PaperToMesh".to_string(),
             });
             if let Some(qualifier) = &mesh.qualifier {
                 edges.push(Edge {
-                    subject: self.pubmed_id.to_string(),
+                    subject: format!("PMID:{}", self.pubmed_id),
                     object: qualifier.code.clone(),
                     edge_type: "PaperToMesh".to_string(),
                 });
@@ -198,7 +198,7 @@ impl Article {
 
         for suppl_mesh in self.suppl_mesh_list.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
                 object: suppl_mesh.code.clone(),
                 edge_type: format!("PaperTo{}", suppl_mesh.mesh_type),
             });
@@ -206,7 +206,7 @@ impl Article {
 
         for keyword in self.keywords.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
                 object: keyword.name.clone(),
                 edge_type: "PaperToKeyword".to_string(),
             });
@@ -214,8 +214,8 @@ impl Article {
 
         for reference in self.references.iter() {
             edges.push(Edge {
-                subject: self.pubmed_id.to_string(),
-                object: reference.to_string(),
+                subject: format!("PMID:{}", self.pubmed_id),
+                object: format!("PMID:{}", reference.to_string()),
                 edge_type: "Citation".to_string(),
             });
         }
