@@ -95,28 +95,27 @@ pub fn parse_pubmed(directory: &str) {
     nodes.write(b"node_name\tnode_type\tdescription\n").unwrap();
 
     paths
-        .into_par_iter()
+        .into_iter()
         .progress_with(pb)
         .flat_map(parse_single_pubmed)
         .for_each(|article|{
             let article = article.unwrap();
-            return;
-            // for node in article.to_nodes() {
-            //     nodes.write(format!(
-            //         "{}\t{}\t{}\n",
-            //         node.node_name,
-            //         node.node_type,
-            //         node.description,
-            //     ).as_bytes()).unwrap();
-            // }
-            // for edge in article.to_edges() {
-            //     edges.write(format!(
-            //         "{}\t{}\t{}\n",
-            //         edge.subject,
-            //         edge.edge_type,
-            //         edge.object,
-            //     ).as_bytes()).unwrap();
-            // }
+            for node in article.to_nodes() {
+                nodes.write(format!(
+                    "{}\t{}\t{}\n",
+                    node.node_name,
+                    node.node_type,
+                    node.description,
+                ).as_bytes()).unwrap();
+            }
+            for edge in article.to_edges() {
+                edges.write(format!(
+                    "{}\t{}\t{}\n",
+                    edge.subject,
+                    edge.edge_type,
+                    edge.object,
+                ).as_bytes()).unwrap();
+            }
         });
 
         nodes.flush().unwrap();
