@@ -59,7 +59,7 @@ pub struct Article {
     pub(crate) pmc: Option<String>,
     pub(crate) pmcid: Option<String>,
     pub(crate) journal: Journal,
-    pub(crate) title: String,
+    pub(crate) title: Option<String>,
     pub(crate) abstract_text: Option<String>,
     pub(crate) pip_other_abstract_text: Option<String>,
     pub(crate) kie_other_abstract_text: Option<String>,

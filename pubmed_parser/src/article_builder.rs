@@ -1367,7 +1367,7 @@ impl ArticleBuilder {
             pmc: self.pmc_builder.build(),
             pmcid: self.pmcid_builder.build(),
             journal: self.journal_builder.build()?,
-            title: self.title_builder.build().unwrap(),
+            title: self.title_builder.build(),
             abstract_text: self.abstract_builder.build().ok(),
             pip_other_abstract_text: self.pip_other_abstract_builder.build().ok(),
             kie_other_abstract_text: self.kie_other_abstract_builder.build().ok(),
