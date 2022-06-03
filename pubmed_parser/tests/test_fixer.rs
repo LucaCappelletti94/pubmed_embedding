@@ -13,7 +13,7 @@ fn test_fixer() {
     let source = std::fs::File::open("/bfd/pubmed/tsv/nodes.tsv").unwrap();
     let source = std::io::BufReader::new(source);
 
-    let destination = std::fs::File::open("/bfd/pubmed/tsv/cleaned_nodes.tsv").unwrap();
+    let destination = std::fs::File::create("/bfd/pubmed/tsv/cleaned_nodes.tsv").unwrap();
     let mut destination = std::io::BufWriter::new(destination);
 
     let pb = ProgressBar::new(512_762_623 as u64);
