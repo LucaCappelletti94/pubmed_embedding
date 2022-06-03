@@ -32,6 +32,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "<CitationSubset>",
                     "<Article ",
                     "<ArticleTitle/>",
+                    "<ReferenceList/>",
                     "<CoiStatement>",
                     "</Article>",
                     "<NumberOfReferences>",

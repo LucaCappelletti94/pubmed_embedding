@@ -1205,6 +1205,9 @@ impl ArticleBuilder {
         if !self.nasa_other_abstract_builder.can_build() && self.nasa_other_abstract_builder.parse(line)? {
             return Ok(());
         }
+        if !self.publisher_other_abstract_builder.can_build() && self.publisher_other_abstract_builder.parse(line)? {
+            return Ok(());
+        }
         if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
             return Ok(());
         }
