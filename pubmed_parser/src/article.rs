@@ -212,6 +212,14 @@ impl Article {
             });
         }
 
+        for reference in self.references.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: reference.to_string(),
+                edge_type: "Citation".to_string(),
+            });
+        }
+
         edges
     }
 }
