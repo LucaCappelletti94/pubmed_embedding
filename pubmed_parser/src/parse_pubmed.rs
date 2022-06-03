@@ -88,11 +88,11 @@ pub fn parse_pubmed(directory: &str) {
 
     let mut edges = BufWriter::new(edges);
 
-    edges.write(b"subject\tedge_type\tobject").unwrap();
+    edges.write(b"subject\tedge_type\tobject\n").unwrap();
 
     let mut nodes = BufWriter::new(nodes);
 
-    nodes.write(b"node_name\tnode_type\tdescription").unwrap();
+    nodes.write(b"node_name\tnode_type\tdescription\n").unwrap();
 
     paths
         .into_iter()
@@ -102,7 +102,7 @@ pub fn parse_pubmed(directory: &str) {
             let article = article.unwrap();
             for node in article.to_nodes() {
                 nodes.write(format!(
-                    "{}\t{}\t{}",
+                    "{}\t{}\t{}\n",
                     node.node_name,
                     node.node_type,
                     node.description,
@@ -110,7 +110,7 @@ pub fn parse_pubmed(directory: &str) {
             }
             for edge in article.to_edges() {
                 edges.write(format!(
-                    "{}\t{}\t{}",
+                    "{}\t{}\t{}\n",
                     edge.subject,
                     edge.edge_type,
                     edge.object,
