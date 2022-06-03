@@ -771,6 +771,66 @@ impl KeywordListBuilder {
 }
 
 #[derive(Debug)]
+struct ArticleIdsBuilder {
+    xml_helper: XMLHelper,
+    article_ids: Vec<ArticleId>,
+    article_id_builder: ObjectBuilder<String>,
+}
+
+impl ArticleIdsBuilder {
+    pub fn new() -> Self {
+        ArticleIdsBuilder {
+            xml_helper: XMLHelper::new("ArticleIdList"),
+            article_ids: Vec::new(),
+            article_id_builder: ObjectBuilder::new("ArticleId"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        let line = self.xml_helper.parse(line)?;
+        if line.is_empty() {
+            return Ok(self.xml_helper.tag_opened);
+        }
+        self.article_id_builder.parse(line)?;
+        if self.article_id_builder.can_build() {
+            let article_id_builder = core::mem::replace(
+                &mut self.article_id_builder,
+                ObjectBuilder::new("ArticleId"),
+            );
+            self.article_ids.push(ArticleId {
+                id_type: article_id_builder
+                    .xml_helper
+                    .attributes
+                    .get("IdType")
+                    .unwrap()
+                    .clone(),
+                value: article_id_builder.build().unwrap(),
+            })
+        }
+
+        Ok(self.xml_helper.tag_opened)
+    }
+
+    pub fn build(self) -> Result<Vec<ArticleId>, String> {
+        if !self.xml_helper.can_build() && !self.article_ids.is_empty() {
+            return Err(format!(
+                concat!(
+                    "Build method was called on ArticleIdListBuilder ",
+                    "but the object is not yet ready to build. ",
+                    "The object currently looks like {:?}"
+                ),
+                self
+            ));
+        }
+        Ok(self.article_ids)
+    }
+
+    pub fn can_build(&self) -> bool {
+        self.xml_helper.can_build()
+    }
+}
+
+#[derive(Debug)]
 struct GeneSymbolListBuilder {
     xml_helper: XMLHelper,
     gene_symbols: Vec<String>,
@@ -1169,12 +1229,7 @@ pub(crate) struct ArticleBuilder {
     completion_date_builder: DateBuilder,
     revised_date_builder: DateBuilder,
     pmid_builder: ObjectBuilder<u32>,
-    pubmed_builder: ObjectBuilder<String>,
-    doi_builder: ObjectBuilder<String>,
-    pii_builder: ObjectBuilder<String>,
-    mid_builder: ObjectBuilder<String>,
-    pmc_builder: ObjectBuilder<String>,
-    pmcid_builder: ObjectBuilder<String>,
+    article_ids_builder: ArticleIdsBuilder,
     journal_builder: JournalBuilder,
     title_builder: ObjectBuilder<String>,
     abstracts_builders: Vec<AbstractBuilder>,
@@ -1206,42 +1261,7 @@ impl ArticleBuilder {
             completion_date_builder: DateBuilder::new("DateCompleted"),
             revised_date_builder: DateBuilder::new("DateRevised"),
             pmid_builder: ObjectBuilder::new("PMID"),
-            pubmed_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "pubmed".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            doi_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "doi".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            pii_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "pii".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            mid_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "mid".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            pmc_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "pmc".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            pmcid_builder: ObjectBuilder::with_attributes(
-                "ArticleId",
-                [("IdType".to_string(), "pmcid".to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
+            article_ids_builder: ArticleIdsBuilder::new(),
             journal_builder: JournalBuilder::new(),
             title_builder: ObjectBuilder::new("ArticleTitle"),
             abstracts_builders: vec![
@@ -1251,6 +1271,8 @@ impl ArticleBuilder {
                 AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
                 AbstractBuilder::with_publisher_language("OtherAbstract", "spa"),
                 AbstractBuilder::with_publisher_language("OtherAbstract", "rus"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "hun"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "gre"),
                 AbstractBuilder::with_publisher_language("OtherAbstract", "chi"),
                 AbstractBuilder::with_publisher_language("OtherAbstract", "ita"),
                 AbstractBuilder::with_publisher_language("OtherAbstract", "ger"),
@@ -1299,22 +1321,7 @@ impl ArticleBuilder {
         if !self.pmid_builder.can_build() && self.pmid_builder.parse(line)? {
             return Ok(());
         }
-        if !self.pubmed_builder.can_build() && self.pubmed_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.doi_builder.can_build() && self.doi_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.pii_builder.can_build() && self.pii_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.mid_builder.can_build() && self.mid_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.pmc_builder.can_build() && self.pmc_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.pmcid_builder.can_build() && self.pmcid_builder.parse(line)? {
+        if !self.article_ids_builder.can_build() && self.article_ids_builder.parse(line)? {
             return Ok(());
         }
         if !self.journal_builder.can_build() && self.journal_builder.parse(line)? {
@@ -1409,11 +1416,7 @@ impl ArticleBuilder {
             completion_date: self.completion_date_builder.build().ok(),
             revision_date: self.revised_date_builder.build().ok(),
             pubmed_id: self.pmid_builder.build().unwrap(),
-            doi: self.doi_builder.build(),
-            pii: self.pii_builder.build(),
-            mid: self.mid_builder.build(),
-            pmc: self.pmc_builder.build(),
-            pmcid: self.pmcid_builder.build(),
+            article_ids: self.article_ids_builder.build()?,
             journal: self.journal_builder.build()?,
             title: self.title_builder.build(),
             abstract_texts: self

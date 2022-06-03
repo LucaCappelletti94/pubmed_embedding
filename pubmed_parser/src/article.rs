@@ -49,20 +49,22 @@ pub struct SupplMesh {
     pub(crate) mesh_type: String,
 }
 
+#[derive(Debug)]
 pub struct Abstract {
     pub(crate) text: String,
     pub(crate) language: Option<String>
+}
+#[derive(Debug)]
+pub struct ArticleId {
+    pub(crate) id_type: String,
+    pub(crate) value: String,
 }
 
 pub struct Article {
     pub(crate) completion_date: Option<Date>,
     pub(crate) revision_date: Option<Date>,
     pub(crate) pubmed_id: u32,
-    pub(crate) doi: Option<String>,
-    pub(crate) pii: Option<String>,
-    pub(crate) mid: Option<String>,
-    pub(crate) pmc: Option<String>,
-    pub(crate) pmcid: Option<String>,
+    pub(crate) article_ids: Vec<ArticleId>,
     pub(crate) journal: Journal,
     pub(crate) title: Option<String>,
     pub(crate) abstract_texts: Vec<Abstract>,
