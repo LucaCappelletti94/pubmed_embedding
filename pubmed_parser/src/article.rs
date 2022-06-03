@@ -53,12 +53,24 @@ pub struct SupplMesh {
 pub struct Abstract {
     pub(crate) text: String,
     pub(crate) abstract_type: Option<String>,
-    pub(crate) language: Option<String>
+    pub(crate) language: Option<String>,
 }
 #[derive(Debug)]
 pub struct ArticleId {
     pub(crate) id_type: String,
     pub(crate) value: String,
+}
+
+pub struct Node {
+    pub(crate) node_name: String,
+    pub(crate) node_type: String,
+    pub(crate) description: String,
+}
+
+pub struct Edge {
+    pub(crate) subject: String,
+    pub(crate) object: String,
+    pub(crate) edge_type: String,
 }
 
 pub struct Article {
@@ -76,4 +88,130 @@ pub struct Article {
     pub(crate) suppl_mesh_list: Vec<SupplMesh>,
     pub(crate) references: Vec<usize>,
     pub(crate) keywords: Vec<Keyword>,
+}
+
+impl Article {
+    pub fn to_nodes(&self) -> Vec<Node> {
+        let mut nodes = vec![Node {
+            node_name: self.pubmed_id.to_string(),
+            node_type: "Paper".to_string(),
+            description: format!(
+                "{}|{}|{}",
+                self.title.as_ref().unwrap_or(&"|".to_string()),
+                self.abstract_text
+                    .as_ref()
+                    .map(|abs| abs.text.to_string())
+                    .unwrap_or("".to_string()),
+                self.other_abstract_texts
+                    .iter()
+                    .map(|abs| { abs.text.to_string() })
+                    .collect::<Vec<String>>()
+                    .join("|")
+            )
+            .trim_matches('|')
+            .to_string(),
+        }];
+
+        for chemical in self.chemical_list.iter() {
+            nodes.push(Node {
+                node_name: chemical.code.clone(),
+                node_type: "Chemical".to_string(),
+                description: chemical.name_of_substance.clone(),
+            })
+        }
+
+        for gene in self.gene_symbol_list.iter() {
+            nodes.push(Node {
+                node_name: gene.clone(),
+                node_type: "Gene".to_string(),
+                description: "".to_string(),
+            })
+        }
+
+        for mesh in self.mesh_list.iter() {
+            nodes.push(Node {
+                node_name: mesh.descriptor.code.clone(),
+                node_type: "Mesh".to_string(),
+                description: mesh.descriptor.name.clone(),
+            });
+            if let Some(qualifier) = &mesh.qualifier {
+                nodes.push(Node {
+                    node_name: qualifier.code.clone(),
+                    node_type: "Mesh".to_string(),
+                    description: qualifier.name.clone(),
+                });
+            }
+        }
+
+        for suppl_mesh in self.suppl_mesh_list.iter() {
+            nodes.push(Node {
+                node_name: suppl_mesh.code.clone(),
+                node_type: suppl_mesh.mesh_type.clone(),
+                description: suppl_mesh.name.clone(),
+            });
+        }
+
+        for keyword in self.keywords.iter() {
+            nodes.push(Node {
+                node_name: keyword.name.clone(),
+                node_type: "Keyword".to_string(),
+                description: "".to_string(),
+            });
+        }
+
+        nodes
+    }
+
+    pub fn to_edges(&self) -> Vec<Edge> {
+        let mut edges = vec![];
+
+        for chemical in self.chemical_list.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: chemical.code.clone(),
+                edge_type: "PaperToChemical".to_string(),
+            });
+        }
+
+        for gene in self.gene_symbol_list.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: gene.clone(),
+                edge_type: "PaperToGene".to_string(),
+            });
+        }
+
+        for mesh in self.mesh_list.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: mesh.descriptor.code.clone(),
+                edge_type: "PaperToMesh".to_string(),
+            });
+            if let Some(qualifier) = &mesh.qualifier {
+                edges.push(Edge {
+                    subject: self.pubmed_id.to_string(),
+                    object: qualifier.code.clone(),
+                    edge_type: "PaperToMesh".to_string(),
+                });
+            }
+        }
+
+        for suppl_mesh in self.suppl_mesh_list.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: suppl_mesh.code.clone(),
+                edge_type: format!("PaperTo{}", suppl_mesh.mesh_type),
+            });
+        }
+
+        for keyword in self.keywords.iter() {
+            edges.push(Edge {
+                subject: self.pubmed_id.to_string(),
+                object: keyword.name.clone(),
+                edge_type: "PaperToKeyword".to_string(),
+            });
+        }
+
+        edges
+    }
 }
