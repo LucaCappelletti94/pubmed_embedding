@@ -1014,7 +1014,6 @@ impl ReferencesBuilder {
                 .unwrap(),
             );
         }
-
         Ok(self.xml_helper.tag_opened)
     }
 
@@ -1030,10 +1029,6 @@ impl ReferencesBuilder {
             ));
         }
         Ok(self.references)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
     }
 }
 
@@ -1313,6 +1308,7 @@ impl ArticleBuilder {
     }
 
     pub fn parse(&mut self, line: &str) -> Result<(), String> {
+        //println!("{}", line);
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
             return Ok(());
@@ -1377,7 +1373,7 @@ impl ArticleBuilder {
         if !self.kie_keywords_builder.can_build() && self.kie_keywords_builder.parse(line)? {
             return Ok(());
         }
-        if !self.references_builder.can_build() && self.references_builder.parse(line)? {
+        if self.references_builder.parse(line)? {
             return Ok(());
         }
         if !self.history_builder.can_build() && self.history_builder.parse(line)? {
