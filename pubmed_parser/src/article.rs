@@ -52,6 +52,7 @@ pub struct SupplMesh {
 #[derive(Debug)]
 pub struct Abstract {
     pub(crate) text: String,
+    pub(crate) abstract_type: Option<String>,
     pub(crate) language: Option<String>
 }
 #[derive(Debug)]
@@ -67,7 +68,8 @@ pub struct Article {
     pub(crate) article_ids: Vec<ArticleId>,
     pub(crate) journal: Journal,
     pub(crate) title: Option<String>,
-    pub(crate) abstract_texts: Vec<Abstract>,
+    pub(crate) abstract_text: Option<Abstract>,
+    pub(crate) other_abstract_texts: Vec<Abstract>,
     pub(crate) chemical_list: Vec<Chemical>,
     pub(crate) gene_symbol_list: Vec<String>,
     pub(crate) mesh_list: Vec<Mesh>,

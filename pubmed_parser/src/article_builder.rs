@@ -383,6 +383,7 @@ impl JournalBuilder {
     }
 }
 
+#[derive(Debug)]
 struct AbstractBuilder {
     xml_helper: XMLHelper,
     abstract_test: Vec<String>,
@@ -393,35 +394,6 @@ impl AbstractBuilder {
     pub fn new(tag: &str) -> Self {
         AbstractBuilder {
             xml_helper: XMLHelper::new(tag),
-            abstract_test: Vec::new(),
-            abstract_builder: ObjectBuilder::new("AbstractText"),
-        }
-    }
-
-    pub fn with_attributes(tag: &str, abstract_type: &str) -> Self {
-        AbstractBuilder {
-            xml_helper: XMLHelper::with_attributes(
-                tag,
-                [("Type".to_string(), abstract_type.to_string())]
-                    .into_iter()
-                    .collect(),
-            ),
-            abstract_test: Vec::new(),
-            abstract_builder: ObjectBuilder::new("AbstractText"),
-        }
-    }
-
-    pub fn with_publisher_language(tag: &str, language: &str) -> Self {
-        AbstractBuilder {
-            xml_helper: XMLHelper::with_attributes(
-                tag,
-                [
-                    ("Type".to_string(), "Publisher".to_string()),
-                    ("Language".to_string(), language.to_string()),
-                ]
-                .into_iter()
-                .collect(),
-            ),
             abstract_test: Vec::new(),
             abstract_builder: ObjectBuilder::new("AbstractText"),
         }
@@ -444,7 +416,7 @@ impl AbstractBuilder {
             );
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(!self.xml_helper.tag_closed)
     }
 
     pub fn build(self) -> Result<Abstract, String> {
@@ -459,6 +431,11 @@ impl AbstractBuilder {
                 .xml_helper
                 .attributes
                 .get("Language")
+                .map(|val| val.clone()),
+            abstract_type: self
+                .xml_helper
+                .attributes
+                .get("Type")
                 .map(|val| val.clone()),
             text: self.abstract_test.join(" "),
         })
@@ -827,6 +804,53 @@ impl ArticleIdsBuilder {
 
     pub fn can_build(&self) -> bool {
         self.xml_helper.can_build()
+    }
+}
+
+#[derive(Debug)]
+struct OtherAbstractBuilder {
+    other_abstracts: Vec<Abstract>,
+    other_abstract_builder: AbstractBuilder,
+}
+
+impl OtherAbstractBuilder {
+    pub fn new() -> Self {
+        OtherAbstractBuilder {
+            other_abstracts: Vec::new(),
+            other_abstract_builder: AbstractBuilder::new("OtherAbstract"),
+        }
+    }
+
+    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
+        self.other_abstract_builder.parse(line)?;
+        let parsed = self.other_abstract_builder.xml_helper.tag_opened;
+        if self.other_abstract_builder.can_build() {
+            self.other_abstracts.push(
+                core::mem::replace(
+                    &mut self.other_abstract_builder,
+                    AbstractBuilder::new("OtherAbstract"),
+                )
+                .build()?,
+            );
+        }
+        Ok(parsed)
+    }
+
+    pub fn build(self) -> Result<Vec<Abstract>, String> {
+        if self.other_abstract_builder.xml_helper.tag_opened
+            && !self.other_abstract_builder.xml_helper.tag_closed
+            && !self.other_abstracts.is_empty()
+        {
+            return Err(format!(
+                concat!(
+                    "Build method was called on OtherAbstractBuilder ",
+                    "but the object is not yet ready to build. ",
+                    "The object currently looks like {:?}"
+                ),
+                self
+            ));
+        }
+        Ok(self.other_abstracts)
     }
 }
 
@@ -1232,7 +1256,8 @@ pub(crate) struct ArticleBuilder {
     article_ids_builder: ArticleIdsBuilder,
     journal_builder: JournalBuilder,
     title_builder: ObjectBuilder<String>,
-    abstracts_builders: Vec<AbstractBuilder>,
+    abstract_text_builder: AbstractBuilder,
+    other_abstracts_builders: OtherAbstractBuilder,
     author_list_builder: AuthorListBuilder,
     publication_type_list_builder: PublicationTypeListBuilder,
     language_builder: ObjectBuilder<String>,
@@ -1264,28 +1289,8 @@ impl ArticleBuilder {
             article_ids_builder: ArticleIdsBuilder::new(),
             journal_builder: JournalBuilder::new(),
             title_builder: ObjectBuilder::new("ArticleTitle"),
-            abstracts_builders: vec![
-                AbstractBuilder::new("Abstract"),
-                AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
-                AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
-                AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "spa"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "rus"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "hun"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "gre"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "chi"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "ita"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "ger"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "por"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "jpn"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "tur"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "dut"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "ara"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "cze"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "pol"),
-                AbstractBuilder::with_publisher_language("OtherAbstract", "fre"),
-                AbstractBuilder::with_attributes("OtherAbstract", "plain-language-summary"),
-            ],
+            abstract_text_builder: AbstractBuilder::new("Abstract"),
+            other_abstracts_builders: OtherAbstractBuilder::new(),
             author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
             publication_type_list_builder: PublicationTypeListBuilder::new(),
@@ -1330,10 +1335,11 @@ impl ArticleBuilder {
         if !self.title_builder.can_build() && self.title_builder.parse(line)? {
             return Ok(());
         }
-        for abstract_builder in self.abstracts_builders.iter_mut() {
-            if !abstract_builder.can_build() && abstract_builder.parse(line)? {
-                return Ok(());
-            }
+        if !self.abstract_text_builder.can_build() && self.abstract_text_builder.parse(line)? {
+            return Ok(());
+        }
+        if self.other_abstracts_builders.parse(line)? {
+            return Ok(());
         }
         if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
             return Ok(());
@@ -1419,11 +1425,8 @@ impl ArticleBuilder {
             article_ids: self.article_ids_builder.build()?,
             journal: self.journal_builder.build()?,
             title: self.title_builder.build(),
-            abstract_texts: self
-                .abstracts_builders
-                .into_iter()
-                .filter_map(|abstract_builder| abstract_builder.build().ok())
-                .collect(),
+            abstract_text: self.abstract_text_builder.build().ok(),
+            other_abstract_texts: self.other_abstracts_builders.build()?,
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
             gene_symbol_list: self.gene_symbol_list_builder.build()?,
