@@ -49,6 +49,11 @@ pub struct SupplMesh {
     pub(crate) mesh_type: String,
 }
 
+pub struct Abstract {
+    pub(crate) text: String,
+    pub(crate) language: Option<String>
+}
+
 pub struct Article {
     pub(crate) completion_date: Option<Date>,
     pub(crate) revision_date: Option<Date>,
@@ -60,15 +65,11 @@ pub struct Article {
     pub(crate) pmcid: Option<String>,
     pub(crate) journal: Journal,
     pub(crate) title: Option<String>,
-    pub(crate) abstract_text: Option<String>,
-    pub(crate) pip_other_abstract_text: Option<String>,
-    pub(crate) kie_other_abstract_text: Option<String>,
-    pub(crate) nasa_other_abstract_text: Option<String>,
-    pub(crate) publisher_other_abstract_text: Option<String>,
+    pub(crate) abstract_texts: Vec<Abstract>,
     pub(crate) chemical_list: Vec<Chemical>,
     pub(crate) gene_symbol_list: Vec<String>,
     pub(crate) mesh_list: Vec<Mesh>,
     pub(crate) suppl_mesh_list: Vec<SupplMesh>,
     pub(crate) references: Vec<usize>,
-    pub(crate) keywords: Vec<Keyword>
+    pub(crate) keywords: Vec<Keyword>,
 }

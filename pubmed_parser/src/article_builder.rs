@@ -7,7 +7,11 @@ struct XMLHelper {
     attributes: HashMap<String, String>,
     mandatory_attributes: Option<HashMap<String, String>>,
     tag_opened: bool,
+    just_opened: bool,
     tag_closed: bool,
+    just_closed: bool,
+    allow_reopening: bool,
+    openings: u8,
 }
 
 impl XMLHelper {
@@ -17,7 +21,25 @@ impl XMLHelper {
             attributes: HashMap::new(),
             mandatory_attributes: None,
             tag_opened: false,
+            just_opened: false,
             tag_closed: false,
+            just_closed: false,
+            allow_reopening: false,
+            openings: 0,
+        }
+    }
+
+    pub fn with_reopening(tag: &str) -> Self {
+        XMLHelper {
+            tag: tag.to_string(),
+            attributes: HashMap::new(),
+            mandatory_attributes: None,
+            tag_opened: false,
+            just_opened: false,
+            tag_closed: false,
+            just_closed: false,
+            allow_reopening: true,
+            openings: 0,
         }
     }
 
@@ -33,12 +55,16 @@ impl XMLHelper {
             attributes: HashMap::new(),
             mandatory_attributes: Some(mandatory_attributes),
             tag_opened: false,
+            just_opened: false,
             tag_closed: false,
+            just_closed: false,
+            allow_reopening: false,
+            openings: 0,
         }
     }
 
     pub fn can_build(&self) -> bool {
-        self.tag_closed
+        self.tag_closed && self.openings == 0
     }
 
     pub fn parse<'a>(&'a mut self, line: &'a str) -> Result<&'a str, String> {
@@ -46,7 +72,7 @@ impl XMLHelper {
         let line = if line.starts_with(&opening_tag)
             && [">", " "].contains(&&line[opening_tag.len()..opening_tag.len() + 1])
         {
-            if self.tag_opened {
+            if !self.allow_reopening && self.tag_opened && !self.just_opened {
                 return Err(format!(
                     "Tag {} is already opened! Reading the line {}.",
                     self.tag, line
@@ -92,9 +118,12 @@ impl XMLHelper {
 
             self.attributes = attributes;
             self.tag_opened = true;
+            self.openings += 1;
+            self.just_opened = true;
 
             &line[tag_length + 1..]
         } else {
+            self.just_opened = false;
             line
         };
 
@@ -105,7 +134,7 @@ impl XMLHelper {
         let closing_tag = format!("</{}>", self.tag);
 
         let line = if line.ends_with(&closing_tag) {
-            if self.tag_closed {
+            if self.tag_closed && !self.just_closed && !self.allow_reopening {
                 return Err(format!("Tag {} is already closed!", self.tag));
             } else if !self.tag_opened {
                 return Err(format!(
@@ -114,8 +143,12 @@ impl XMLHelper {
                 ));
             }
             self.tag_closed = true;
+            self.just_closed = true;
+            self.openings -= 1;
+
             &line[..line.len() - closing_tag.len()]
         } else {
+            self.just_closed = false;
             line
         };
 
@@ -378,6 +411,22 @@ impl AbstractBuilder {
         }
     }
 
+    pub fn with_publisher_language(tag: &str, language: &str) -> Self {
+        AbstractBuilder {
+            xml_helper: XMLHelper::with_attributes(
+                tag,
+                [
+                    ("Type".to_string(), "Publisher".to_string()),
+                    ("Language".to_string(), language.to_string()),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            abstract_test: Vec::new(),
+            abstract_builder: ObjectBuilder::new("AbstractText"),
+        }
+    }
+
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
@@ -398,14 +447,21 @@ impl AbstractBuilder {
         Ok(self.xml_helper.tag_opened)
     }
 
-    pub fn build(self) -> Result<String, String> {
+    pub fn build(self) -> Result<Abstract, String> {
         if !self.xml_helper.can_build() {
             return Err(format!(concat!(
                 "Build method was called on AbstractBuilder ",
                 "but the object is not yet ready to build."
             )));
         }
-        Ok(self.abstract_test.join(" "))
+        Ok(Abstract {
+            language: self
+                .xml_helper
+                .attributes
+                .get("Language")
+                .map(|val| val.clone()),
+            text: self.abstract_test.join(" "),
+        })
     }
 
     pub fn can_build(&self) -> bool {
@@ -842,7 +898,7 @@ struct ReferencesBuilder {
 impl ReferencesBuilder {
     pub fn new() -> Self {
         ReferencesBuilder {
-            xml_helper: XMLHelper::new("ReferenceList"),
+            xml_helper: XMLHelper::with_reopening("ReferenceList"),
             references: Vec::new(),
             pubmed_builder: ObjectBuilder::with_attributes(
                 "ArticleId",
@@ -1121,11 +1177,7 @@ pub(crate) struct ArticleBuilder {
     pmcid_builder: ObjectBuilder<String>,
     journal_builder: JournalBuilder,
     title_builder: ObjectBuilder<String>,
-    abstract_builder: AbstractBuilder,
-    pip_other_abstract_builder: AbstractBuilder,
-    kie_other_abstract_builder: AbstractBuilder,
-    nasa_other_abstract_builder: AbstractBuilder,
-    publisher_other_abstract_builder: AbstractBuilder,
+    abstracts_builders: Vec<AbstractBuilder>,
     author_list_builder: AuthorListBuilder,
     publication_type_list_builder: PublicationTypeListBuilder,
     language_builder: ObjectBuilder<String>,
@@ -1143,7 +1195,7 @@ pub(crate) struct ArticleBuilder {
     pip_keywords_builder: KeywordListBuilder,
     kie_keywords_builder: KeywordListBuilder,
     investigator_list_builder: InvestigatorListBuilder,
-    gene_symbol_list_builder: GeneSymbolListBuilder
+    gene_symbol_list_builder: GeneSymbolListBuilder,
 }
 
 impl ArticleBuilder {
@@ -1192,14 +1244,26 @@ impl ArticleBuilder {
             ),
             journal_builder: JournalBuilder::new(),
             title_builder: ObjectBuilder::new("ArticleTitle"),
-            abstract_builder: AbstractBuilder::new("Abstract"),
-            pip_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
-            kie_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
-            nasa_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
-            publisher_other_abstract_builder: AbstractBuilder::with_attributes(
-                "OtherAbstract",
-                "Publisher",
-            ),
+            abstracts_builders: vec![
+                AbstractBuilder::new("Abstract"),
+                AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
+                AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
+                AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "spa"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "rus"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "chi"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "ita"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "ger"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "por"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "jpn"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "tur"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "dut"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "ara"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "cze"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "pol"),
+                AbstractBuilder::with_publisher_language("OtherAbstract", "fre"),
+                AbstractBuilder::with_attributes("OtherAbstract", "plain-language-summary"),
+            ],
             author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
             publication_type_list_builder: PublicationTypeListBuilder::new(),
@@ -1217,7 +1281,7 @@ impl ArticleBuilder {
             pip_keywords_builder: KeywordListBuilder::new("PIP"),
             kie_keywords_builder: KeywordListBuilder::new("KIE"),
             investigator_list_builder: InvestigatorListBuilder::new(),
-            gene_symbol_list_builder: GeneSymbolListBuilder::new()
+            gene_symbol_list_builder: GeneSymbolListBuilder::new(),
         }
     }
 
@@ -1259,28 +1323,10 @@ impl ArticleBuilder {
         if !self.title_builder.can_build() && self.title_builder.parse(line)? {
             return Ok(());
         }
-        if !self.abstract_builder.can_build() && self.abstract_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.pip_other_abstract_builder.can_build()
-            && self.pip_other_abstract_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.kie_other_abstract_builder.can_build()
-            && self.kie_other_abstract_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.nasa_other_abstract_builder.can_build()
-            && self.nasa_other_abstract_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.publisher_other_abstract_builder.can_build()
-            && self.publisher_other_abstract_builder.parse(line)?
-        {
-            return Ok(());
+        for abstract_builder in self.abstracts_builders.iter_mut() {
+            if !abstract_builder.can_build() && abstract_builder.parse(line)? {
+                return Ok(());
+            }
         }
         if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
             return Ok(());
@@ -1301,7 +1347,9 @@ impl ArticleBuilder {
         if !self.chemical_list_builder.can_build() && self.chemical_list_builder.parse(line)? {
             return Ok(());
         }
-        if !self.gene_symbol_list_builder.can_build() && self.gene_symbol_list_builder.parse(line)? {
+        if !self.gene_symbol_list_builder.can_build()
+            && self.gene_symbol_list_builder.parse(line)?
+        {
             return Ok(());
         }
         if !self.mesh_list_builder.can_build() && self.mesh_list_builder.parse(line)? {
@@ -1368,11 +1416,11 @@ impl ArticleBuilder {
             pmcid: self.pmcid_builder.build(),
             journal: self.journal_builder.build()?,
             title: self.title_builder.build(),
-            abstract_text: self.abstract_builder.build().ok(),
-            pip_other_abstract_text: self.pip_other_abstract_builder.build().ok(),
-            kie_other_abstract_text: self.kie_other_abstract_builder.build().ok(),
-            nasa_other_abstract_text: self.nasa_other_abstract_builder.build().ok(),
-            publisher_other_abstract_text: self.publisher_other_abstract_builder.build().ok(),
+            abstract_texts: self
+                .abstracts_builders
+                .into_iter()
+                .filter_map(|abstract_builder| abstract_builder.build().ok())
+                .collect(),
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
             gene_symbol_list: self.gene_symbol_list_builder.build()?,
