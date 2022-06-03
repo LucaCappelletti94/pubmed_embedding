@@ -52,6 +52,9 @@ impl XMLHelper {
                     self.tag, line
                 ));
             }
+            if line.ends_with("/>") {
+                return Ok("");
+            }
             let tag_length = line.find(">").unwrap();
             let attributes_portion = &line[opening_tag.len()..tag_length];
 
@@ -123,6 +126,7 @@ impl XMLHelper {
 #[derive(Debug)]
 struct ObjectBuilder<T: FromStr + Debug> {
     xml_helper: XMLHelper,
+    textual_value: String,
     value: Option<T>,
 }
 
@@ -130,6 +134,7 @@ impl<T: FromStr + Debug> ObjectBuilder<T> {
     pub fn new(tag: &str) -> Self {
         ObjectBuilder {
             xml_helper: XMLHelper::new(tag),
+            textual_value: "".to_string(),
             value: None,
         }
     }
@@ -137,6 +142,7 @@ impl<T: FromStr + Debug> ObjectBuilder<T> {
     pub fn with_attributes(tag: &str, mandatory_attributes: HashMap<String, String>) -> Self {
         ObjectBuilder {
             xml_helper: XMLHelper::with_attributes(tag, mandatory_attributes),
+            textual_value: "".to_string(),
             value: None,
         }
     }
@@ -148,33 +154,31 @@ impl<T: FromStr + Debug> ObjectBuilder<T> {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if !line.is_empty() {
-            if self.value.is_some() {
-                let line = line.to_string();
-                let tag = self.xml_helper.tag.clone();
-                return Err(format!(
-                    concat!(
-                        "The parser for the tag {} ",
-                        "has already a value {:?} ",
-                        "but a new value {} was now ",
-                        "provided."
-                    ),
-                    tag, self.value, line
-                ));
+            self.textual_value = if self.textual_value.is_empty() {
+                line.to_string()
             } else {
-                self.value = Some(T::from_str(line).map_err(|_| {
-                    format!(
-                        concat!("Something went wrong while trying to convert the value `{}`."),
-                        line
-                    )
-                })?);
-            }
+                format!("{} {}", self.textual_value, line)
+            };
             return Ok(true);
         }
         Ok(self.xml_helper.tag_opened)
     }
 
     pub fn build(self) -> Option<T> {
-        self.value
+        if self.textual_value.is_empty() {
+            return None;
+        }
+        Some(
+            T::from_str(&self.textual_value)
+                .map_err(|_| {
+                    format!(
+                        concat!("Something went wrong while trying to convert the value `{}` in tag {}."),
+                        self.textual_value,
+                        self.xml_helper.tag
+                    )
+                })
+                .unwrap(),
+        )
     }
 }
 
@@ -348,6 +352,7 @@ impl JournalBuilder {
 
 struct AbstractBuilder {
     xml_helper: XMLHelper,
+    abstract_test: Vec<String>,
     abstract_builder: ObjectBuilder<String>,
 }
 
@@ -355,6 +360,20 @@ impl AbstractBuilder {
     pub fn new(tag: &str) -> Self {
         AbstractBuilder {
             xml_helper: XMLHelper::new(tag),
+            abstract_test: Vec::new(),
+            abstract_builder: ObjectBuilder::new("AbstractText"),
+        }
+    }
+
+    pub fn with_attributes(tag: &str, abstract_type: &str) -> Self {
+        AbstractBuilder {
+            xml_helper: XMLHelper::with_attributes(
+                tag,
+                [("Type".to_string(), abstract_type.to_string())]
+                    .into_iter()
+                    .collect(),
+            ),
+            abstract_test: Vec::new(),
             abstract_builder: ObjectBuilder::new("AbstractText"),
         }
     }
@@ -364,9 +383,18 @@ impl AbstractBuilder {
         if line.is_empty() {
             return Ok(self.xml_helper.tag_opened);
         }
-        if !self.abstract_builder.can_build() && self.abstract_builder.parse(line)? {
-            return Ok(true);
+        self.abstract_builder.parse(line)?;
+        if self.abstract_builder.can_build() {
+            self.abstract_test.push(
+                core::mem::replace(
+                    &mut self.abstract_builder,
+                    ObjectBuilder::new("AbstractText"),
+                )
+                .build()
+                .unwrap(),
+            );
         }
+
         Ok(self.xml_helper.tag_opened)
     }
 
@@ -377,7 +405,7 @@ impl AbstractBuilder {
                 "but the object is not yet ready to build."
             )));
         }
-        Ok(self.abstract_builder.build().unwrap())
+        Ok(self.abstract_test.join(" "))
     }
 
     pub fn can_build(&self) -> bool {
@@ -1031,7 +1059,9 @@ pub(crate) struct ArticleBuilder {
     journal_builder: JournalBuilder,
     title_builder: ObjectBuilder<String>,
     abstract_builder: AbstractBuilder,
-    other_abstract_builder: AbstractBuilder,
+    pip_other_abstract_builder: AbstractBuilder,
+    kie_other_abstract_builder: AbstractBuilder,
+    nasa_other_abstract_builder: AbstractBuilder,
     author_list_builder: AuthorListBuilder,
     publication_type_list_builder: PublicationTypeListBuilder,
     language_builder: ObjectBuilder<String>,
@@ -1091,7 +1121,9 @@ impl ArticleBuilder {
             journal_builder: JournalBuilder::new(),
             title_builder: ObjectBuilder::new("ArticleTitle"),
             abstract_builder: AbstractBuilder::new("Abstract"),
-            other_abstract_builder: AbstractBuilder::new("OtherAbstract"),
+            pip_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
+            kie_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
+            nasa_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
             author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
             publication_type_list_builder: PublicationTypeListBuilder::new(),
@@ -1150,7 +1182,13 @@ impl ArticleBuilder {
         if !self.abstract_builder.can_build() && self.abstract_builder.parse(line)? {
             return Ok(());
         }
-        if !self.other_abstract_builder.can_build() && self.other_abstract_builder.parse(line)? {
+        if !self.pip_other_abstract_builder.can_build() && self.pip_other_abstract_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.kie_other_abstract_builder.can_build() && self.kie_other_abstract_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.nasa_other_abstract_builder.can_build() && self.nasa_other_abstract_builder.parse(line)? {
             return Ok(());
         }
         if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
@@ -1236,7 +1274,9 @@ impl ArticleBuilder {
             journal: self.journal_builder.build()?,
             title: self.title_builder.build().unwrap(),
             abstract_text: self.abstract_builder.build().ok(),
-            other_abstract_text: self.other_abstract_builder.build().ok(),
+            pip_other_abstract_text: self.pip_other_abstract_builder.build().ok(),
+            kie_other_abstract_text: self.kie_other_abstract_builder.build().ok(),
+            nasa_other_abstract_text: self.nasa_other_abstract_builder.build().ok(),
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
             suppl_mesh_list: self.suppl_mesh_list_builder.build()?,

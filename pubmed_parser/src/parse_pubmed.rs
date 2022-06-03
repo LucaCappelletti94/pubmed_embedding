@@ -19,6 +19,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                 let line = line.trim();
                 if [
                     "<?xml",
+                    "<?nihms ?>",
                     "<!DOCTYPE",
                     "<PubmedArticleSet>",
                     "<PubmedData>",
@@ -29,6 +30,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "</MedlineCitation",
                     "<CitationSubset>",
                     "<Article ",
+                    "<CoiStatement>",
                     "</Article>",
                     "<NumberOfReferences>",
                     "<Language>",
