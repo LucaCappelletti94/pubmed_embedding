@@ -16,7 +16,6 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, String>> {
     file.lines()
         .filter_map(|line| match line {
             Ok(line) => {
-                return None;
                 let line = line.trim();
                 if [
                     "<?xml",
