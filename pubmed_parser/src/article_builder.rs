@@ -1032,14 +1032,14 @@ impl ReferencesBuilder {
     }
 }
 
-struct AuthorListBuilder {
+struct IgnoreTag {
     xml_helper: XMLHelper,
 }
 
-impl AuthorListBuilder {
-    pub fn new() -> Self {
-        AuthorListBuilder {
-            xml_helper: XMLHelper::new("AuthorList"),
+impl IgnoreTag {
+    pub fn new(tag: &str) -> Self {
+        IgnoreTag {
+            xml_helper: XMLHelper::new(tag),
         }
     }
 
@@ -1047,204 +1047,31 @@ impl AuthorListBuilder {
         let _ = self.xml_helper.parse(line)?;
         Ok(self.xml_helper.tag_opened)
     }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
 }
 
-struct PublicationTypeListBuilder {
-    xml_helper: XMLHelper,
+struct IgnoreTags {
+    ignored_tags: Vec<IgnoreTag>,
 }
 
-impl PublicationTypeListBuilder {
-    pub fn new() -> Self {
-        PublicationTypeListBuilder {
-            xml_helper: XMLHelper::new("PublicationTypeList"),
+impl IgnoreTags {
+    pub fn new(tags: &[&str]) -> Self {
+        IgnoreTags {
+            ignored_tags: tags.iter().map(|tag| IgnoreTag::new(tag)).collect(),
         }
     }
 
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct MedlineJournalInfoBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl MedlineJournalInfoBuilder {
-    pub fn new() -> Self {
-        MedlineJournalInfoBuilder {
-            xml_helper: XMLHelper::new("MedlineJournalInfo"),
+        for ignored_tag in self.ignored_tags.iter_mut(){
+            if ignored_tag.parse(line)?{
+                return Ok(true);
+            }
         }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct HistoryBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl HistoryBuilder {
-    pub fn new() -> Self {
-        HistoryBuilder {
-            xml_helper: XMLHelper::new("History"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct PersonalNameSubjectListBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl PersonalNameSubjectListBuilder {
-    pub fn new() -> Self {
-        PersonalNameSubjectListBuilder {
-            xml_helper: XMLHelper::new("PersonalNameSubjectList"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct DataBankListBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl DataBankListBuilder {
-    pub fn new() -> Self {
-        DataBankListBuilder {
-            xml_helper: XMLHelper::new("DataBankList"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct GrantListBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl GrantListBuilder {
-    pub fn new() -> Self {
-        GrantListBuilder {
-            xml_helper: XMLHelper::new("GrantList"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct CommentsCorrectionsListBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl CommentsCorrectionsListBuilder {
-    pub fn new() -> Self {
-        CommentsCorrectionsListBuilder {
-            xml_helper: XMLHelper::new("CommentsCorrectionsList"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct ArticleDateBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl ArticleDateBuilder {
-    pub fn new() -> Self {
-        ArticleDateBuilder {
-            xml_helper: XMLHelper::new("ArticleDate"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
-    }
-}
-
-struct InvestigatorListBuilder {
-    xml_helper: XMLHelper,
-}
-
-impl InvestigatorListBuilder {
-    pub fn new() -> Self {
-        InvestigatorListBuilder {
-            xml_helper: XMLHelper::new("InvestigatorList"),
-        }
-    }
-
-    pub fn parse(&mut self, line: &str) -> Result<bool, String> {
-        let _ = self.xml_helper.parse(line)?;
-        Ok(self.xml_helper.tag_opened)
-    }
-
-    pub fn can_build(&self) -> bool {
-        self.xml_helper.can_build()
+        Ok(false)
     }
 }
 
 pub(crate) struct ArticleBuilder {
     xml_helper: XMLHelper,
-    path: String,
     completion_date_builder: DateBuilder,
     revised_date_builder: DateBuilder,
     pmid_builder: ObjectBuilder<u32>,
@@ -1253,31 +1080,21 @@ pub(crate) struct ArticleBuilder {
     title_builder: ObjectBuilder<String>,
     abstract_text_builder: AbstractBuilder,
     other_abstracts_builders: OtherAbstractBuilder,
-    author_list_builder: AuthorListBuilder,
-    publication_type_list_builder: PublicationTypeListBuilder,
     language_builder: ObjectBuilder<String>,
-    medline_journal_info_builder: MedlineJournalInfoBuilder,
-    history_builder: HistoryBuilder,
-    data_bank_builder: DataBankListBuilder,
-    grant_builder: GrantListBuilder,
-    article_date_builder: ArticleDateBuilder,
-    comments_corrections_builder: CommentsCorrectionsListBuilder,
-    personal_name_subject_list: PersonalNameSubjectListBuilder,
     chemical_list_builder: ChemicalListBuilder,
     mesh_list_builder: MeshListBuilder,
     suppl_mesh_list_builder: SupplMeshListBuilder,
     references_builder: ReferencesBuilder,
     pip_keywords_builder: KeywordListBuilder,
     kie_keywords_builder: KeywordListBuilder,
-    investigator_list_builder: InvestigatorListBuilder,
     gene_symbol_list_builder: GeneSymbolListBuilder,
+    ignored_tags: IgnoreTags,
 }
 
 impl ArticleBuilder {
-    pub fn new(path: &str) -> Self {
+    pub fn new() -> Self {
         ArticleBuilder {
             xml_helper: XMLHelper::new("PubmedArticle"),
-            path: path.to_string(),
             completion_date_builder: DateBuilder::new("DateCompleted"),
             revised_date_builder: DateBuilder::new("DateRevised"),
             pmid_builder: ObjectBuilder::new("PMID"),
@@ -1286,24 +1103,28 @@ impl ArticleBuilder {
             title_builder: ObjectBuilder::new("ArticleTitle"),
             abstract_text_builder: AbstractBuilder::new("Abstract"),
             other_abstracts_builders: OtherAbstractBuilder::new(),
-            author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
-            publication_type_list_builder: PublicationTypeListBuilder::new(),
-            medline_journal_info_builder: MedlineJournalInfoBuilder::new(),
-            history_builder: HistoryBuilder::new(),
-            data_bank_builder: DataBankListBuilder::new(),
-            grant_builder: GrantListBuilder::new(),
-            article_date_builder: ArticleDateBuilder::new(),
-            comments_corrections_builder: CommentsCorrectionsListBuilder::new(),
-            personal_name_subject_list: PersonalNameSubjectListBuilder::new(),
             chemical_list_builder: ChemicalListBuilder::new(),
             mesh_list_builder: MeshListBuilder::new(),
             suppl_mesh_list_builder: SupplMeshListBuilder::new(),
             references_builder: ReferencesBuilder::new(),
             pip_keywords_builder: KeywordListBuilder::new("PIP"),
             kie_keywords_builder: KeywordListBuilder::new("KIE"),
-            investigator_list_builder: InvestigatorListBuilder::new(),
             gene_symbol_list_builder: GeneSymbolListBuilder::new(),
+            ignored_tags: IgnoreTags::new(&[
+                "AuthorList",
+                "PublicationTypeList",
+                "MedlineJournalInfo",
+                "History",
+                "PersonalNameSubjectList",
+                "DataBankList",
+                "GrantList",
+                "CoiStatement",
+                "VernacularTitle",
+                "CommentsCorrectionsList",
+                "ArticleDate",
+                "InvestigatorList"                
+            ])
         }
     }
 
@@ -1337,20 +1158,10 @@ impl ArticleBuilder {
         if self.other_abstracts_builders.parse(line)? {
             return Ok(());
         }
-        if !self.author_list_builder.can_build() && self.author_list_builder.parse(line)? {
+        if self.ignored_tags.parse(line)? {
             return Ok(());
         }
         if self.language_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.publication_type_list_builder.can_build()
-            && self.publication_type_list_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.medline_journal_info_builder.can_build()
-            && self.medline_journal_info_builder.parse(line)?
-        {
             return Ok(());
         }
         if !self.chemical_list_builder.can_build() && self.chemical_list_builder.parse(line)? {
@@ -1374,33 +1185,6 @@ impl ArticleBuilder {
             return Ok(());
         }
         if self.references_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.history_builder.can_build() && self.history_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.data_bank_builder.can_build() && self.data_bank_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.grant_builder.can_build() && self.grant_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.article_date_builder.can_build() && self.article_date_builder.parse(line)? {
-            return Ok(());
-        }
-        if !self.comments_corrections_builder.can_build()
-            && self.comments_corrections_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.investigator_list_builder.can_build()
-            && self.investigator_list_builder.parse(line)?
-        {
-            return Ok(());
-        }
-        if !self.personal_name_subject_list.can_build()
-            && self.personal_name_subject_list.parse(line)?
-        {
             return Ok(());
         }
 

@@ -12,7 +12,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
     let file = GzDecoder::new(file);
     let file = std::io::BufReader::new(file);
 
-    let mut article_builder = ArticleBuilder::new(&path);
+    let mut article_builder = ArticleBuilder::new();
     file.lines()
         .filter_map(|line| match line {
             Ok(line) => {
@@ -34,8 +34,6 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "<ArticleTitle/>",
                     "<PublicationTypeList/>",
                     "<ReferenceList/>",
-                    "<CoiStatement>",
-                    "</CoiStatement>",
                     "</Article>",
                     "<NumberOfReferences>",
                     "<Language>",
@@ -43,8 +41,6 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "<OtherID ",
                     "<ELocationID ",
                     "<GeneralNote ",
-                    "<VernacularTitle>",
-                    "</VernacularTitle>",
                     "<Pagination",
                     "</Pagination",
                     "<MedlinePgn",
@@ -61,7 +57,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                 if article_builder.can_build() {
                     Some(Ok(core::mem::replace(
                         &mut article_builder,
-                        ArticleBuilder::new(&path),
+                        ArticleBuilder::new(),
                     )
                     .build()
                     .unwrap()))
