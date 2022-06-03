@@ -42,8 +42,15 @@ pub struct Mesh {
     pub(crate) qualifier: Option<MeshTopic>,
 }
 
+#[derive(Debug)]
+pub struct SupplMesh {
+    pub(crate) code: String,
+    pub(crate) name: String,
+    pub(crate) mesh_type: String,
+}
+
 pub struct Article {
-    pub(crate) completion_date: Date,
+    pub(crate) completion_date: Option<Date>,
     pub(crate) revision_date: Option<Date>,
     pub(crate) pubmed_id: u32,
     pub(crate) doi: Option<String>,
@@ -53,9 +60,12 @@ pub struct Article {
     pub(crate) journal: Journal,
     pub(crate) title: String,
     pub(crate) abstract_text: Option<String>,
-    pub(crate) other_abstract_text: Option<String>,
+    pub(crate) pip_other_abstract_text: Option<String>,
+    pub(crate) kie_other_abstract_text: Option<String>,
+    pub(crate) nasa_other_abstract_text: Option<String>,
     pub(crate) chemical_list: Vec<Chemical>,
     pub(crate) mesh_list: Vec<Mesh>,
+    pub(crate) suppl_mesh_list: Vec<SupplMesh>,
     pub(crate) references: Vec<usize>,
     pub(crate) keywords: Vec<Keyword>
 }
