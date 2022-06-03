@@ -118,6 +118,8 @@ impl XMLHelper {
 
             self.attributes = attributes;
             self.tag_opened = true;
+            self.tag_closed = false;
+            self.just_closed = false;
             self.openings += 1;
             self.just_opened = true;
 
@@ -194,7 +196,7 @@ impl<T: FromStr + Debug> ObjectBuilder<T> {
             };
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Option<T> {
@@ -244,7 +246,7 @@ impl DateBuilder {
         if !self.day_builder.can_build() && self.day_builder.parse(line)? {
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn can_build(&self) -> bool {
@@ -300,7 +302,7 @@ impl JournalIssueBuilder {
         {
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn can_build(&self) -> bool {
@@ -344,7 +346,7 @@ impl JournalBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         if !self.issn_builder.can_build() && self.issn_builder.parse(line)? {
             return Ok(true);
@@ -360,7 +362,7 @@ impl JournalBuilder {
         {
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Journal, String> {
@@ -402,7 +404,7 @@ impl AbstractBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.abstract_builder.parse(line)?;
         if self.abstract_builder.can_build() {
@@ -471,7 +473,7 @@ impl ChemicalBuilder {
         {
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn can_build(&self) -> bool {
@@ -511,7 +513,7 @@ impl ChemicalListBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
 
         self.chemical_builder.parse(line)?;
@@ -523,7 +525,7 @@ impl ChemicalListBuilder {
             );
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<Chemical>, String> {
@@ -565,7 +567,7 @@ impl MeshBuilder {
         if !self.qualifier_builder.can_build() && self.qualifier_builder.parse(line)? {
             return Ok(true);
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn can_build(&self) -> bool {
@@ -641,7 +643,7 @@ impl MeshListBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.mesh_builder.parse(line)?;
         if self.mesh_builder.can_build() {
@@ -652,7 +654,7 @@ impl MeshListBuilder {
             );
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<Mesh>, String> {
@@ -700,7 +702,7 @@ impl KeywordListBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.keyword_builder.parse(line)?;
         if self.keyword_builder.can_build() {
@@ -725,7 +727,7 @@ impl KeywordListBuilder {
             })
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<Keyword>, String> {
@@ -766,7 +768,7 @@ impl ArticleIdsBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.article_id_builder.parse(line)?;
         if self.article_id_builder.can_build() {
@@ -785,7 +787,7 @@ impl ArticleIdsBuilder {
             })
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<ArticleId>, String> {
@@ -873,7 +875,7 @@ impl GeneSymbolListBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.gene_symbol_builder.parse(line)?;
         if self.gene_symbol_builder.can_build() {
@@ -884,7 +886,7 @@ impl GeneSymbolListBuilder {
             self.gene_symbols.push(gene_symbol_builder.build().unwrap())
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<String>, String> {
@@ -925,7 +927,7 @@ impl SupplMeshListBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.suppl_mesh_builder.parse(line)?;
         if self.suppl_mesh_builder.can_build() {
@@ -950,7 +952,7 @@ impl SupplMeshListBuilder {
             })
         }
 
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<SupplMesh>, String> {
@@ -996,7 +998,7 @@ impl ReferencesBuilder {
     pub fn parse(&mut self, line: &str) -> Result<bool, String> {
         let line = self.xml_helper.parse(line)?;
         if line.is_empty() {
-            return Ok(self.xml_helper.tag_opened);
+            return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed);
         }
         self.pubmed_builder.parse(line)?;
         if self.pubmed_builder.can_build() {
@@ -1014,7 +1016,7 @@ impl ReferencesBuilder {
                 .unwrap(),
             );
         }
-        Ok(self.xml_helper.tag_opened)
+        Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed || self.xml_helper.just_closed)
     }
 
     pub fn build(self) -> Result<Vec<usize>, String> {
