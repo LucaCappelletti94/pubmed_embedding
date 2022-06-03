@@ -20,7 +20,7 @@ fn test_fixer() {
 
     source.lines().progress_with(pb).for_each(|line| {
         let line = line.unwrap();
-        let splits = line.trim().rsplitn(3, '\t').collect::<Vec<&str>>();
+        let splits = line.rsplitn(3, '\t').collect::<Vec<&str>>();
         if unique_nodes.insert(splits[0].to_string()) {
             destination
                 .write(
@@ -28,7 +28,7 @@ fn test_fixer() {
                         "{}\t{}\t{}\n",
                         splits[0],
                         splits[1],
-                        splits[2].replace('\t', " ")
+                        splits[2].replace('\t', " ").trim()
                     )
                     .as_bytes(),
                 )
