@@ -35,6 +35,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "<PublicationTypeList/>",
                     "<ReferenceList/>",
                     "<CoiStatement>",
+                    "</CoiStatement>",
                     "</Article>",
                     "<NumberOfReferences>",
                     "<Language>",
@@ -49,7 +50,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "<MedlinePgn",
                 ]
                 .iter()
-                .any(|starter| line.starts_with(starter))
+                .any(|target| line.starts_with(target) || line.ends_with(target))
                 {
                     return None;
                 }
