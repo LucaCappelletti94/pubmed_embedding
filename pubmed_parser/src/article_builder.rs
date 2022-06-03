@@ -802,7 +802,12 @@ impl ArticleIdsBuilder {
             return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed
                 || self.xml_helper.just_closed);
         }
-        self.article_id_builder.parse(line)?;
+        if self.article_id_builder.parse(line).is_err() {
+            let _ = core::mem::replace(
+                &mut self.article_id_builder,
+                ObjectBuilder::new("ArticleId"),
+            );
+        }
         if self.article_id_builder.can_build() {
             let article_id_builder = core::mem::replace(
                 &mut self.article_id_builder,
@@ -1044,7 +1049,17 @@ impl ReferencesBuilder {
             return Ok(self.xml_helper.tag_opened && !self.xml_helper.tag_closed
                 || self.xml_helper.just_closed);
         }
-        self.pubmed_builder.parse(line)?;
+        if self.pubmed_builder.parse(line).is_err() {
+            let _ = core::mem::replace(
+                &mut self.pubmed_builder,
+                ObjectBuilder::with_attributes(
+                    "ArticleId",
+                    [("IdType".to_string(), "pubmed".to_string())]
+                        .into_iter()
+                        .collect(),
+                )
+            );
+        }
         if self.pubmed_builder.can_build() {
             self.references.push(
                 core::mem::replace(
