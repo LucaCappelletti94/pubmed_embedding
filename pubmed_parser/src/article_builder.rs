@@ -1048,6 +1048,7 @@ impl InvestigatorListBuilder {
 
 pub(crate) struct ArticleBuilder {
     xml_helper: XMLHelper,
+    path: String,
     completion_date_builder: DateBuilder,
     revised_date_builder: DateBuilder,
     pmid_builder: ObjectBuilder<u32>,
@@ -1056,12 +1057,14 @@ pub(crate) struct ArticleBuilder {
     pii_builder: ObjectBuilder<String>,
     mid_builder: ObjectBuilder<String>,
     pmc_builder: ObjectBuilder<String>,
+    pmcid_builder: ObjectBuilder<String>,
     journal_builder: JournalBuilder,
     title_builder: ObjectBuilder<String>,
     abstract_builder: AbstractBuilder,
     pip_other_abstract_builder: AbstractBuilder,
     kie_other_abstract_builder: AbstractBuilder,
     nasa_other_abstract_builder: AbstractBuilder,
+    publisher_other_abstract_builder: AbstractBuilder,
     author_list_builder: AuthorListBuilder,
     publication_type_list_builder: PublicationTypeListBuilder,
     language_builder: ObjectBuilder<String>,
@@ -1082,9 +1085,10 @@ pub(crate) struct ArticleBuilder {
 }
 
 impl ArticleBuilder {
-    pub fn new() -> Self {
+    pub fn new(path: &str) -> Self {
         ArticleBuilder {
             xml_helper: XMLHelper::new("PubmedArticle"),
+            path: path.to_string(),
             completion_date_builder: DateBuilder::new("DateCompleted"),
             revised_date_builder: DateBuilder::new("DateRevised"),
             pmid_builder: ObjectBuilder::new("PMID"),
@@ -1118,12 +1122,19 @@ impl ArticleBuilder {
                     .into_iter()
                     .collect(),
             ),
+            pmcid_builder: ObjectBuilder::with_attributes(
+                "ArticleId",
+                [("IdType".to_string(), "pmcid".to_string())]
+                    .into_iter()
+                    .collect(),
+            ),
             journal_builder: JournalBuilder::new(),
             title_builder: ObjectBuilder::new("ArticleTitle"),
             abstract_builder: AbstractBuilder::new("Abstract"),
             pip_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "PIP"),
             kie_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "KIE"),
             nasa_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "NASA"),
+            publisher_other_abstract_builder: AbstractBuilder::with_attributes("OtherAbstract", "Publisher"),
             author_list_builder: AuthorListBuilder::new(),
             language_builder: ObjectBuilder::new("Language"),
             publication_type_list_builder: PublicationTypeListBuilder::new(),
@@ -1171,6 +1182,9 @@ impl ArticleBuilder {
             return Ok(());
         }
         if !self.pmc_builder.can_build() && self.pmc_builder.parse(line)? {
+            return Ok(());
+        }
+        if !self.pmcid_builder.can_build() && self.pmcid_builder.parse(line)? {
             return Ok(());
         }
         if !self.journal_builder.can_build() && self.journal_builder.parse(line)? {
@@ -1271,12 +1285,14 @@ impl ArticleBuilder {
             pii: self.pii_builder.build(),
             mid: self.mid_builder.build(),
             pmc: self.pmc_builder.build(),
+            pmcid: self.pmcid_builder.build(),
             journal: self.journal_builder.build()?,
             title: self.title_builder.build().unwrap(),
             abstract_text: self.abstract_builder.build().ok(),
             pip_other_abstract_text: self.pip_other_abstract_builder.build().ok(),
             kie_other_abstract_text: self.kie_other_abstract_builder.build().ok(),
             nasa_other_abstract_text: self.nasa_other_abstract_builder.build().ok(),
+            publisher_other_abstract_text: self.publisher_other_abstract_builder.build().ok(),
             chemical_list: self.chemical_list_builder.build()?,
             mesh_list: self.mesh_list_builder.build()?,
             suppl_mesh_list: self.suppl_mesh_list_builder.build()?,

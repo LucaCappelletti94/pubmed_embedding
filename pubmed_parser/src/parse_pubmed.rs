@@ -1,18 +1,18 @@
 use crate::article::*;
 use crate::article_builder::*;
+use flate2::read::GzDecoder;
 use indicatif::ParallelProgressIterator;
 use indicatif::ProgressBar;
 use rayon::prelude::*;
 use std::fs;
-use flate2::read::GzDecoder;
 use std::io::BufRead;
 
 pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>> {
-    let file = std::fs::File::open(path).unwrap();
+    let file = std::fs::File::open(&path).unwrap();
     let file = GzDecoder::new(file);
     let file = std::io::BufReader::new(file);
 
-    let mut article_builder = ArticleBuilder::new();
+    let mut article_builder = ArticleBuilder::new(&path);
     file.lines()
         .filter_map(|line| match line {
             Ok(line) => {
@@ -20,6 +20,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                 if [
                     "<?xml",
                     "<?nihms ?>",
+                    "<?pmcsd ?>",
                     "<!DOCTYPE",
                     "<PubmedArticleSet>",
                     "<PubmedData>",
@@ -30,6 +31,7 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                     "</MedlineCitation",
                     "<CitationSubset>",
                     "<Article ",
+                    "<ArticleTitle/>",
                     "<CoiStatement>",
                     "</Article>",
                     "<NumberOfReferences>",
@@ -50,11 +52,14 @@ pub fn parse_single_pubmed(path: String) -> Vec<Result<Article, std::io::Error>>
                 {
                     return None;
                 }
-                article_builder.parse(line).unwrap();
+                article_builder
+                    .parse(line)
+                    .map_err(|err| format!("{} {}", err, path))
+                    .unwrap();
                 if article_builder.can_build() {
                     Some(Ok(core::mem::replace(
                         &mut article_builder,
-                        ArticleBuilder::new(),
+                        ArticleBuilder::new(&path),
                     )
                     .build()
                     .unwrap()))
