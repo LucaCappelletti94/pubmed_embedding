@@ -39,7 +39,9 @@ fn test_edge_fixer() {
             && unique_nodes.contains(splits[0])
             && unique_nodes.contains(splits[2])
         {
-            destination.write(original.as_bytes()).unwrap();
+            destination
+                .write(format!("{}\n", original).as_bytes())
+                .unwrap();
         }
     });
 }
