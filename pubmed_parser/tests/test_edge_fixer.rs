@@ -35,7 +35,7 @@ fn test_edge_fixer() {
         let original = line.unwrap();
         let splits = original.splitn(3, '\t').collect::<Vec<&str>>();
         if !splits[0].is_empty()
-            && splits[2].is_empty()
+            && !splits[2].is_empty()
             && unique_nodes.contains(splits[0])
             && unique_nodes.contains(splits[2])
         {
