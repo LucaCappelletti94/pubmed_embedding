@@ -1,11 +1,9 @@
 use crate::article::*;
 use crate::article_builder::*;
 use flate2::read::GzDecoder;
-use indicatif::ParallelProgressIterator;
 use indicatif::ProgressIterator;
 use std::fs::File;
 use indicatif::ProgressBar;
-use rayon::prelude::*;
 use std::io::Write;
 use std::io::BufWriter;
 use std::fs;
