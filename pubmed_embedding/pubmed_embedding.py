@@ -7,6 +7,7 @@ from .utils import get_index, download_chunks_from_curie_ids, get_vector_from_cu
 
 def get_pubmed_embedding_from_curies(
     curies: Union[List[str], str],
+    ignore_missing_curies: bool = True,
     downloads_directory: str = "embeddings",
     version: str = "pubmed_scibert_26_11_2022",
 ) -> pd.DataFrame:
@@ -16,6 +17,9 @@ def get_pubmed_embedding_from_curies(
     ---------------------
     curies: Union[List[str], str]
         Curies to retrieve the embedding for.
+    ignore_missing_curies: bool = True
+        Whether to ignore curies for which we cannot currently
+        provide an embedding. By default, True.
     downloads_directory: str = "embeddings"
         Directory where to store the downloaded files.
     version: str = "pubmed_scibert_26_11_2022"
@@ -28,6 +32,19 @@ def get_pubmed_embedding_from_curies(
     
     if isinstance(curies, str):
         curies: List[str] = [curies]
+
+    if ignore_missing_curies:
+        curies = [
+            curie
+            for curie in tqdm(
+                curies,
+                desc=f"Checking availability in version {version}",
+                leave=False,
+                dynamic_ncols=True,
+                disable=len(curies) == 1
+            )
+            if curie in index.index
+        ]
     
     curie_ids: np.ndarray = index.loc[curies].index.values
 

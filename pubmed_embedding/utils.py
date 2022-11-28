@@ -48,7 +48,7 @@ def get_index(
     BaseDownloader(
         downloads_directory=f"{downloads_directory}/{version}",
     ).download(urls=url, paths=index_path)
-    df = pd.DataFrame(index_path)
+    df = pd.DataFrame(index_path, header=None)
     column = df.columns[0]
     df.reset_index(inplace=True)
     df.set_index(column, inplace=True)
