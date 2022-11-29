@@ -1,10 +1,345 @@
 {
-    "index": "",
+    "index": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_index.csv.gz",
     "chunks": [
         {
             "start": 0,
-            "end": 0,
-            "url": ""
+            "end": 500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_0_500000.npy"
+        },
+        {
+            "start": 500000,
+            "end": 1000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_500000_1000000.npy"
+        },
+        {
+            "start": 1000000,
+            "end": 1500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_1000000_1500000.npy"
+        },
+        {
+            "start": 1500000,
+            "end": 2000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_1500000_2000000.npy"
+        },
+        {
+            "start": 2000000,
+            "end": 2500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_2000000_2500000.npy"
+        },
+        {
+            "start": 2500000,
+            "end": 3000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_2500000_3000000.npy"
+        },
+        {
+            "start": 3000000,
+            "end": 3500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_3000000_3500000.npy"
+        },
+        {
+            "start": 3500000,
+            "end": 4000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_3500000_4000000.npy"
+        },
+        {
+            "start": 4000000,
+            "end": 4500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_4000000_4500000.npy"
+        },
+        {
+            "start": 4500000,
+            "end": 5000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_4500000_5000000.npy"
+        },
+        {
+            "start": 5000000,
+            "end": 5500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_5000000_5500000.npy"
+        },
+        {
+            "start": 5500000,
+            "end": 6000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_5500000_6000000.npy"
+        },
+        {
+            "start": 6000000,
+            "end": 6500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_6000000_6500000.npy"
+        },
+        {
+            "start": 6500000,
+            "end": 7000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_6500000_7000000.npy"
+        },
+        {
+            "start": 7000000,
+            "end": 7500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_7000000_7500000.npy"
+        },
+        {
+            "start": 7500000,
+            "end": 8000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_7500000_8000000.npy"
+        },
+        {
+            "start": 8000000,
+            "end": 8500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_8000000_8500000.npy"
+        },
+        {
+            "start": 8500000,
+            "end": 9000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_8500000_9000000.npy"
+        },
+        {
+            "start": 9000000,
+            "end": 9500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_9000000_9500000.npy"
+        },
+        {
+            "start": 9500000,
+            "end": 10000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_9500000_10000000.npy"
+        },
+        {
+            "start": 10000000,
+            "end": 10500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_10000000_10500000.npy"
+        },
+        {
+            "start": 10500000,
+            "end": 11000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_10500000_11000000.npy"
+        },
+        {
+            "start": 11000000,
+            "end": 11500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_11000000_11500000.npy"
+        },
+        {
+            "start": 11500000,
+            "end": 12000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_11500000_12000000.npy"
+        },
+        {
+            "start": 12000000,
+            "end": 12500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_12000000_12500000.npy"
+        },
+        {
+            "start": 12500000,
+            "end": 13000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_12500000_13000000.npy"
+        },
+        {
+            "start": 13000000,
+            "end": 13500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_13000000_13500000.npy"
+        },
+        {
+            "start": 13500000,
+            "end": 14000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_13500000_14000000.npy"
+        },
+        {
+            "start": 14000000,
+            "end": 14500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_14000000_14500000.npy"
+        },
+        {
+            "start": 14500000,
+            "end": 15000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_14500000_15000000.npy"
+        },
+        {
+            "start": 15000000,
+            "end": 15500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_15000000_15500000.npy"
+        },
+        {
+            "start": 15500000,
+            "end": 16000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_15500000_16000000.npy"
+        },
+        {
+            "start": 16000000,
+            "end": 16500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_16000000_16500000.npy"
+        },
+        {
+            "start": 16500000,
+            "end": 17000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_16500000_17000000.npy"
+        },
+        {
+            "start": 17000000,
+            "end": 17500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_17000000_17500000.npy"
+        },
+        {
+            "start": 17500000,
+            "end": 18000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_17500000_18000000.npy"
+        },
+        {
+            "start": 18000000,
+            "end": 18500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_18000000_18500000.npy"
+        },
+        {
+            "start": 18500000,
+            "end": 19000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_18500000_19000000.npy"
+        },
+        {
+            "start": 19000000,
+            "end": 19500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_19000000_19500000.npy"
+        },
+        {
+            "start": 19500000,
+            "end": 20000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_19500000_20000000.npy"
+        },
+        {
+            "start": 20000000,
+            "end": 20500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_20000000_20500000.npy"
+        },
+        {
+            "start": 20500000,
+            "end": 21000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_20500000_21000000.npy"
+        },
+        {
+            "start": 21000000,
+            "end": 21500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_21000000_21500000.npy"
+        },
+        {
+            "start": 21500000,
+            "end": 22000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_21500000_22000000.npy"
+        },
+        {
+            "start": 22000000,
+            "end": 22500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_22000000_22500000.npy"
+        },
+        {
+            "start": 22500000,
+            "end": 23000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_22500000_23000000.npy"
+        },
+        {
+            "start": 23000000,
+            "end": 23500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_23000000_23500000.npy"
+        },
+        {
+            "start": 23500000,
+            "end": 24000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_23500000_24000000.npy"
+        },
+        {
+            "start": 24000000,
+            "end": 24500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_24000000_24500000.npy"
+        },
+        {
+            "start": 24500000,
+            "end": 25000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_24500000_25000000.npy"
+        },
+        {
+            "start": 25000000,
+            "end": 25500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_25000000_25500000.npy"
+        },
+        {
+            "start": 25500000,
+            "end": 26000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_25500000_26000000.npy"
+        },
+        {
+            "start": 26000000,
+            "end": 26500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_26000000_26500000.npy"
+        },
+        {
+            "start": 26500000,
+            "end": 27000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_26500000_27000000.npy"
+        },
+        {
+            "start": 27000000,
+            "end": 27500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_27000000_27500000.npy"
+        },
+        {
+            "start": 27500000,
+            "end": 28000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_27500000_28000000.npy"
+        },
+        {
+            "start": 28000000,
+            "end": 28500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_28000000_28500000.npy"
+        },
+        {
+            "start": 28500000,
+            "end": 29000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_28500000_29000000.npy"
+        },
+        {
+            "start": 29000000,
+            "end": 29500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_29000000_29500000.npy"
+        },
+        {
+            "start": 29500000,
+            "end": 30000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_29500000_30000000.npy"
+        },
+        {
+            "start": 30000000,
+            "end": 30500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_30000000_30500000.npy"
+        },
+        {
+            "start": 30500000,
+            "end": 31000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_30500000_31000000.npy"
+        },
+        {
+            "start": 31000000,
+            "end": 31500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_31000000_31500000.npy"
+        },
+        {
+            "start": 31500000,
+            "end": 32000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_31500000_32000000.npy"
+        },
+        {
+            "start": 32000000,
+            "end": 32500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_32000000_32500000.npy"
+        },
+        {
+            "start": 32500000,
+            "end": 33000000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_32500000_33000000.npy"
+        },
+        {
+            "start": 33000000,
+            "end": 33500000,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_33000000_33500000.npy"
+        },
+        {
+            "start": 33500000,
+            "end": 33722731,
+            "url": "https://archive.org/download/pubmed_scibert_26_11_2022/pubmed_scibert_26_11_2022_33500000_33722731.npy"
         }
     ]
 }

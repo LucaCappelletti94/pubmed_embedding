@@ -52,6 +52,7 @@ def get_index(
     column = df.columns[0]
     df.reset_index(inplace=True)
     df.set_index(column, inplace=True)
+    df.columns = ["curie_id"]
     return df
 
 

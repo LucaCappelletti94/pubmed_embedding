@@ -46,7 +46,7 @@ def get_pubmed_embedding_from_curies(
             if curie in index.index
         ]
     
-    curie_ids: np.ndarray = index.loc[curies].index.values
+    curie_ids: np.ndarray = index.loc[curies].curie_id.values
 
     download_chunks_from_curie_ids(curie_ids, version, downloads_directory)
 
