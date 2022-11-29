@@ -69,7 +69,7 @@ def get_chunk_id_from_curie_id(
     version: str
         The version of the embedding to retrieve.
     """
-    for chunk_id, chunk in enumerate(get_metadata(version)["chunk"]):
+    for chunk_id, chunk in enumerate(get_metadata(version)["chunks"]):
         if curie_id >= chunk["start"] and curie_id < chunk["end"]:
             return chunk_id
     raise ValueError(
@@ -92,7 +92,7 @@ def restrict_curie_id_to_chunk(
         The version of the embedding to retrieve.
     """
     chunk_id = get_chunk_id_from_curie_id(curie_id, version)
-    chunk = get_metadata(version)["chunk"][chunk_id]
+    chunk = get_metadata(version)["chunks"][chunk_id]
     return chunk_id - chunk["start"]
 
 
@@ -128,7 +128,7 @@ def get_unique_urls_from_curie_ids(
     version: str
         The version of the embedding to retrieve.
     """
-    chunks = get_metadata(version)["chunk"]
+    chunks = get_metadata(version)["chunks"]
     chunk_ids = []
     urls = []
     for chunk_id in get_unique_chunk_ids_from_curie_ids(curie_ids, version):
@@ -245,7 +245,7 @@ def download_entire_version(
     downloads_directory: str
         The directory where to store the downloads.
     """
-    chunks = get_metadata(version)["chunk"]
+    chunks = get_metadata(version)["chunks"]
     BaseDownloader(
         downloads_directory=f"{downloads_directory}/{version}",
     ).download(
