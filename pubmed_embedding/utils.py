@@ -232,6 +232,7 @@ def get_vector_from_curie_id(
         downloads_directory
     )[restrict_curie_id_to_chunk(curie_id, version)]
 
+
 def download_entire_version(
     version: str = "pubmed_scibert_26_11_2022",
     downloads_directory: str = "embeddings"
