@@ -46,7 +46,7 @@ def get_index(
     url = get_metadata(version)["index"]
     index_path = f"{downloads_directory}/{version}/{version}_index.csv"
     BaseDownloader().download(urls=url, paths=index_path)
-    df = pd.DataFrame(index_path, header=None)
+    df = pd.read_csv(index_path, header=None)
     column = df.columns[0]
     df.reset_index(inplace=True)
     df.set_index(column, inplace=True)
