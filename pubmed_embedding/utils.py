@@ -46,7 +46,7 @@ def get_index(
     url = get_metadata(version)["index"]
     index_path = f"{version}_index.csv"
     BaseDownloader(
-        downloads_directory=f"{downloads_directory}/{version}",
+        target_directory=f"{downloads_directory}/{version}",
     ).download(urls=url, paths=index_path)
     df = pd.DataFrame(index_path, header=None)
     column = df.columns[0]
@@ -176,7 +176,7 @@ def download_chunks_from_curie_ids(
     """
     urls, chunk_ids = get_unique_urls_from_curie_ids(curie_ids, version)
     BaseDownloader(
-        downloads_directory=f"{downloads_directory}/{version}",
+        target_directory=f"{downloads_directory}/{version}",
     ).download(
         urls=urls,
         paths=[f"{chunk_id}.npy" for chunk_id in chunk_ids]
@@ -233,21 +233,21 @@ def get_vector_from_curie_id(
     )[restrict_curie_id_to_chunk(curie_id, version)]
 
 def download_entire_version(
-    version: str,
-    downloads_directory: str
+    version: str = "pubmed_scibert_26_11_2022",
+    downloads_directory: str = "embeddings"
 ):
     """Downloads the entire set of embedding chunks for given version.
 
     Parameters
     --------------------
-    version: str
+    version: str = "pubmed_scibert_26_11_2022"
         The version of the embedding to retrieve.
-    downloads_directory: str
+    downloads_directory: str = "embeddings"
         The directory where to store the downloads.
     """
     chunks = get_metadata(version)["chunks"]
     BaseDownloader(
-        downloads_directory=f"{downloads_directory}/{version}",
+        target_directory=f"{downloads_directory}/{version}",
     ).download(
         urls=[chunk["url"] for chunk in chunks],
         paths=[f"{chunk_id}.npy" for chunk_id in range(len(chunks))]
