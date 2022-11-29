@@ -44,10 +44,8 @@ def get_index(
         The directory where to store the downloads
     """
     url = get_metadata(version)["index"]
-    index_path = f"{version}_index.csv"
-    BaseDownloader(
-        target_directory=f"{downloads_directory}/{version}",
-    ).download(urls=url, paths=index_path)
+    index_path = f"{downloads_directory}/{version}/{version}_index.csv"
+    BaseDownloader().download(urls=url, paths=index_path)
     df = pd.DataFrame(index_path, header=None)
     column = df.columns[0]
     df.reset_index(inplace=True)
@@ -175,11 +173,9 @@ def download_chunks_from_curie_ids(
         The directory where to store the downloads.
     """
     urls, chunk_ids = get_unique_urls_from_curie_ids(curie_ids, version)
-    BaseDownloader(
-        target_directory=f"{downloads_directory}/{version}",
-    ).download(
+    BaseDownloader().download(
         urls=urls,
-        paths=[f"{chunk_id}.npy" for chunk_id in chunk_ids]
+        paths=[f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in chunk_ids]
     )
 
 
@@ -253,8 +249,7 @@ def download_entire_version(
     chunks = get_metadata(version)["chunks"]
     BaseDownloader(
         process_number=process_number,
-        target_directory=f"{downloads_directory}/{version}",
     ).download(
         urls=[chunk["url"] for chunk in chunks],
-        paths=[f"{chunk_id}.npy" for chunk_id in range(len(chunks))]
+        paths=[f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in range(len(chunks))]
     )
