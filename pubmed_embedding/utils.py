@@ -91,7 +91,7 @@ def restrict_curie_id_to_chunk(
     """
     chunk_id = get_chunk_id_from_curie_id(curie_id, version)
     chunk = get_metadata(version)["chunks"][chunk_id]
-    return chunk_id - chunk["start"]
+    return curie_id - chunk["start"]
 
 
 def get_unique_chunk_ids_from_curie_ids(
