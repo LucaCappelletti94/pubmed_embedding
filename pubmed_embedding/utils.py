@@ -231,3 +231,24 @@ def get_vector_from_curie_id(
         version,
         downloads_directory
     )[restrict_curie_id_to_chunk(curie_id, version)]
+
+def download_entire_version(
+    version: str,
+    downloads_directory: str
+):
+    """Downloads the entire set of embedding chunks for given version.
+
+    Parameters
+    --------------------
+    version: str
+        The version of the embedding to retrieve.
+    downloads_directory: str
+        The directory where to store the downloads.
+    """
+    chunks = get_metadata(version)["chunk"]
+    BaseDownloader(
+        downloads_directory=f"{downloads_directory}/{version}",
+    ).download(
+        urls=[chunk["url"] for chunk in chunks],
+        paths=[f"{chunk_id}.npy" for chunk_id in range(len(chunks))]
+    )
