@@ -1,0 +1,1 @@
+include pubmed_embedding/versions/*.json
