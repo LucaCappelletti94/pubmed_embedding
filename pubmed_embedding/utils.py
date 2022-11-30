@@ -203,7 +203,7 @@ def get_embedding_from_curie_id(
     path = get_embedding_chunk_path_from_curie_id(
         curie_id, version, downloads_directory)
     if path not in embeddings:
-        embeddings[path] = np.load(path, mmap_mode="r")
+        embeddings[path] = np.load(path, mmap_mode="r+")
     return embeddings[path]
 
 
