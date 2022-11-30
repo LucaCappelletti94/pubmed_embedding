@@ -9,7 +9,7 @@ def get_pubmed_embedding_from_curies(
     curies: Union[List[str], str],
     ignore_missing_curies: bool = True,
     downloads_directory: str = "embeddings",
-    version: str = "pubmed_scibert_26_11_2022",
+    version: str = "pubmed_scibert_30_11_2022",
 ) -> pd.DataFrame:
     """Returns dataframe with curies as index and embedding from required version.
     
@@ -22,7 +22,7 @@ def get_pubmed_embedding_from_curies(
         provide an embedding. By default, True.
     downloads_directory: str = "embeddings"
         Directory where to store the downloaded files.
-    version: str = "pubmed_scibert_26_11_2022"
+    version: str = "pubmed_scibert_30_11_2022"
         The version of the file to retrieve.
     """
     index: pd.DataFrame = get_index(

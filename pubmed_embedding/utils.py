@@ -230,7 +230,7 @@ def get_vector_from_curie_id(
 
 
 def download_entire_version(
-    version: str = "pubmed_scibert_26_11_2022",
+    version: str = "pubmed_scibert_30_11_2022",
     downloads_directory: str = "embeddings",
     process_number: int = -1
 ):
@@ -238,7 +238,7 @@ def download_entire_version(
 
     Parameters
     --------------------
-    version: str = "pubmed_scibert_26_11_2022"
+    version: str = "pubmed_scibert_30_11_2022"
         The version of the embedding to retrieve.
     downloads_directory: str = "embeddings"
         The directory where to store the downloads.
@@ -246,10 +246,10 @@ def download_entire_version(
         Number of processes to use.
         If the given number is -1, we use all the available processes.
     """
-    chunks = get_metadata(version)["chunks"]
+    url = get_metadata(version)["complete_embedding_url"]
     BaseDownloader(
         process_number=process_number,
     ).download(
-        urls=[chunk["url"] for chunk in chunks],
-        paths=[f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in range(len(chunks))]
+        urls=url,
+        paths=f"{downloads_directory}/{version}/complete_embedding.npy"
     )
