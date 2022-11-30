@@ -232,7 +232,6 @@ def get_vector_from_curie_id(
 def download_entire_version(
     version: str = "pubmed_scibert_30_11_2022",
     downloads_directory: str = "embeddings",
-    process_number: int = -1
 ):
     """Downloads the entire set of embedding chunks for given version.
 
@@ -242,14 +241,27 @@ def download_entire_version(
         The version of the embedding to retrieve.
     downloads_directory: str = "embeddings"
         The directory where to store the downloads.
-    process_number: int = -1
-        Number of processes to use.
-        If the given number is -1, we use all the available processes.
     """
     url = get_metadata(version)["complete_embedding_url"]
-    BaseDownloader(
-        process_number=process_number,
-    ).download(
+    BaseDownloader().download(
         urls=url,
         paths=f"{downloads_directory}/{version}/complete_embedding.npy"
+    )
+
+def download_pubmed_texts(
+    downloads_directory: str = "embeddings",
+):
+    """Downloads TSV with pubmed IDs, titles and when available, abstracts
+
+    Parameters
+    --------------------
+    downloads_directory: str = "embeddings"
+        The directory where to store the downloads.
+    """
+    url = "https://archive.org/download/pubmed_30_11_2022.tsv/pubmed_30_11_2022.tsv.gz"
+    BaseDownloader(
+        auto_extract=False
+    ).download(
+        urls=url,
+        paths=f"{downloads_directory}/pubmed.tsv.gz"
     )
