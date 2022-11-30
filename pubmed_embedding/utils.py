@@ -175,7 +175,8 @@ def download_chunks_from_curie_ids(
     urls, chunk_ids = get_unique_urls_from_curie_ids(curie_ids, version)
     BaseDownloader().download(
         urls=urls,
-        paths=[f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in chunk_ids]
+        paths=[
+            f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in chunk_ids]
     )
 
 
@@ -247,6 +248,7 @@ def download_entire_version(
         urls=url,
         paths=f"{downloads_directory}/{version}/complete_embedding.npy"
     )
+
 
 def download_pubmed_texts(
     downloads_directory: str = "embeddings",
