@@ -63,7 +63,24 @@ And the result is:
 
 |Specter|
 
+Citing this work
+-----------------------------
+If you have found these datasets useful, please do cite:
+
+.. code:: bib
+
+    @software{cappellettiPubMed2022,
+        author = {Luca, Cappelletti and Tommaso, Fontana and Justin, Reese},
+        month = {12},
+        title = {{BM25-weighted BERT-based embedding of PubMed}},
+        url = {https://github.com/LucaCappelletti94/pubmed_embedding},
+        version = {1.0.12},
+        year = {2022}
+    }
+
+
 
 .. |BERT| image:: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/bert.png?raw=true
 .. |SciBERT| image:: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/scibert.png?raw=true
 .. |Specter| image:: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/specter.png?raw=true
+
