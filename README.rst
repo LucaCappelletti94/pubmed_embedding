@@ -72,11 +72,11 @@ If you have found these datasets useful, please do cite:
 .. code:: bib
 
     @software{cappellettiPubMed2022,
-        author = {Luca, Cappelletti and Tommaso, Fontana and Justin, Reese},
+        author = {Cappelletti, Luca and Fontana, Tommaso and Reese, Justin},
         month = {12},
         title = {{BM25-weighted BERT-based embedding of PubMed}},
         url = {https://github.com/LucaCappelletti94/pubmed_embedding},
-        version = {1.0.12},
+        version = {1.0.14},
         year = {2022}
     }
 
