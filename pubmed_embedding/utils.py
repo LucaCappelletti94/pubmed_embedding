@@ -173,7 +173,9 @@ def download_chunks_from_curie_ids(
         The directory where to store the downloads.
     """
     urls, chunk_ids = get_unique_urls_from_curie_ids(curie_ids, version)
-    BaseDownloader().download(
+    BaseDownloader(
+        process_number=1
+    ).download(
         urls=urls,
         paths=[
             f"{downloads_directory}/{version}/{chunk_id}.npy" for chunk_id in chunk_ids]
