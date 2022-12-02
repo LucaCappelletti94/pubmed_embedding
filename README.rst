@@ -94,6 +94,6 @@ If you have found these datasets useful, please do cite:
     :target: https://pepy.tech/badge/pubmed-embedding
     :alt: Pypi total project downloads 
 
-.. |paper| image:: https://img.shields.io/badge/Paper-BM25_weighted_BERT_based_embedding_of_PubMed
+.. |paper| image:: https://img.shields.io/badge/Paper-BM25_weighted_BERT_based_embedding_of_PubMed-blue.svg
     :target: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/BM25_weighted_BERT_based_embedding_of_PubMed.pdf
     :alt: Paper
