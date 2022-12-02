@@ -1,5 +1,7 @@
 PubMed embedding
 ===================================
+|pip| |downloads| |paper|
+
 Building PubMed embedding, automatically.
 
 
@@ -84,3 +86,14 @@ If you have found these datasets useful, please do cite:
 .. |SciBERT| image:: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/scibert.png?raw=true
 .. |Specter| image:: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/specter.png?raw=true
 
+.. |pip| image:: https://badge.fury.io/py/pubmed-embedding.svg
+    :target: https://badge.fury.io/py/pubmed-embedding
+    :alt: Pypi project
+
+.. |downloads| image:: https://pepy.tech/badge/pubmed-embedding
+    :target: https://pepy.tech/badge/pubmed-embedding
+    :alt: Pypi total project downloads 
+
+.. |paper| image:: https://img.shields.io/badge/DOI-10.48550/arXiv.2110.06196-blue.svg
+    :target: https://github.com/LucaCappelletti94/pubmed_embedding/blob/main/BM25_weighted_BERT_based_embedding_of_PubMed.pdf
+    :alt: Paper
